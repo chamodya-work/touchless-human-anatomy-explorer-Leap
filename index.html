@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Touchless Human Anatomy Explorer</title>
+<link rel="stylesheet" href="src/ui/styles.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "./lib/three/three.module.min.js"
+  }
+}
+</script>
+</head>
+<body>
+
+  <!-- 3D scene -->
+  <canvas id="scene-canvas"></canvas>
+
+  <!-- Ambient vignette / scanline overlay for the futuristic medical look -->
+  <div class="scene-vignette"></div>
+
+  <!-- Top title bar (hidden on welcome screen) -->
+  <header id="app-title-bar" class="app-title-bar hidden">
+    <span class="app-title-bar__dot"></span>
+    TOUCHLESS HUMAN ANATOMY EXPLORER
+  </header>
+
+  <!-- Tracking status banner (Leap Motion connect / disconnect messages) -->
+  <div id="tracking-banner" class="tracking-banner hidden"></div>
+
+  <!-- Welcome / attract screen -->
+  <section id="welcome-screen" class="welcome-screen hidden"></section>
+
+  <!-- Main system-selection menu -->
+  <nav id="main-menu" class="main-menu hidden"></nav>
+
+  <!-- Floating information panel -->
+  <aside id="info-panel" class="info-panel hidden"></aside>
+
+  <!-- Explorer-specific controls (Blood Flow, Breathing Mode, etc) -->
+  <div id="explorer-controls" class="explorer-controls"></div>
+
+  <!-- Return-to-menu button -->
+  <button id="back-btn" class="back-btn hidden" data-selectable>
+    ✋ Return to Menu
+  </button>
+
+  <!-- Pause toast (open-palm gesture) -->
+  <div id="pause-toast" class="pause-toast">⏸ Interaction Paused</div>
+
+  <!-- Gesture indicator HUD -->
+  <div id="gesture-indicator" class="gesture-indicator-root"></div>
+
+  <!-- Idle / attract-mode overlay -->
+  <div id="idle-layer" class="idle-mode hidden"></div>
+
+  <!-- Virtual gesture cursor -->
+  <div id="cursor-layer" class="cursor-layer"></div>
+
+  <!-- Staff-only: Leap Motion debug overlay (F9) -->
+  <div id="debug-layer" class="debug-overlay hidden"></div>
+
+  <!-- Staff-only: Leap Motion calibration screen (F10) -->
+  <div id="calibration-layer" class="calibration-screen hidden"></div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
