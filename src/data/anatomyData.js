@@ -218,28 +218,28 @@ export const SYSTEMS = {
 
   digestive: {
     id: "digestive",
-    label: "DIGESTIVE SYSTEM",
+    label: "ජීර්ණ පද්ධතිය",
     icon: "🍽",
-    summary: "Breaks down food into energy and nutrients",
-    name: "Digestive System",
-    function: "Breaks down food and absorbs nutrients for the body to use.",
-    structures: ["Stomach", "Duodenum", "Small intestine", "Large intestine", "Liver", "Gallbladder", "Pancreas", "Bile ducts"],
-    fact: "This model combines six separately-modeled real organs — liver, pancreas, gallbladder, small intestine, large intestine and the bile duct network — all correctly positioned relative to each other, right down to real anatomical landmarks like the liver's impressions from neighboring organs.",
+    summary: "ආහාර ශක්තිය සහ පෝෂක බවට බිඳ දමයි",
+    name: "ජීර්ණ පද්ධතිය",
+    function: "ආහාර බිඳ දමා සිරුරට භාවිතා කළ හැකි පෝෂක අවශෝෂණය කරයි.",
+    structures: ["ආමාශය", "ග්‍රහණිය", "කුඩා බඩවැල", "මහා බඩවැල", "අක්මාව", "පිතාශය", "අග්නාශය", "පිත නාල"],
+    fact: "මෙම ආකෘතිය වෙන වෙනම ආකෘතිගත කළ සැබෑ අවයව හයක් ඒකාබද්ධ කරයි — අක්මාව, අග්නාශය, පිතාශය, කුඩා බඩවැල, මහා බඩවැල සහ පිත නාල ජාලය — සියල්ල එකිනෙකට සාපේක්ෂව නිවැරදිව ස්ථානගත කර ඇති අතර, අසල්වැසි අවයවවලින් අක්මාවේ ඇති වන සලකුණු වැනි සැබෑ ව්‍යුහ විද්‍යාත්මක සලකුණු දක්වාම.",
     simple:
-      "Food travels through a long tube that breaks it into nutrients your blood can carry to every cell, with the liver, gallbladder and pancreas adding digestive juices along the way.",
+      "ආහාර ඔබේ රුධිරයට සෑම සෛලයකටම ගෙන යා හැකි පෝෂක බවට බිඳ දමන දිගු නාලයක් හරහා ගමන් කරයි; එම අතරතුර අක්මාව, පිතාශය සහ අග්නාශය ජීර්ණ යුෂ එකතු කරයි.",
     // Categories from SIX real, separately-sourced GLB files loaded
     // together -- see src/anatomy/digestiveClassifier.js. The stomach is
     // a small procedural addition (this dataset doesn't include a
     // stomach or esophagus model) -- see README/ATTRIBUTION.
     parts: [
-      { id: "stomach", name: "Stomach", function: "Uses acid and muscle to break food down further." },
-      { id: "duodenum", name: "Duodenum", function: "The first, short section of the small intestine, where bile and pancreatic juice join the food." },
-      { id: "smallIntestine", name: "Small Intestine", function: "The jejunum and ileum — absorb most nutrients into the bloodstream." },
-      { id: "largeIntestine", name: "Large Intestine", function: "Absorbs water and forms solid waste, including the appendix and rectum." },
-      { id: "liver", name: "Liver", function: "Filters blood and produces bile to digest fat." },
-      { id: "gallbladder", name: "Gallbladder", function: "Stores and concentrates bile produced by the liver." },
-      { id: "pancreas", name: "Pancreas", function: "Produces enzymes and insulin to regulate digestion and blood sugar." },
-      { id: "bileDucts", name: "Bile Duct Network", function: "Carries bile from the liver and gallbladder, and digestive enzymes from the pancreas, into the duodenum." },
+      { id: "stomach", name: "ආමාශය", function: "ආහාර තවදුරටත් බිඳ දැමීමට අම්ලය සහ පේශි භාවිතා කරයි." },
+      { id: "duodenum", name: "ග්‍රහණිය", function: "කුඩා බඩවැලේ පළමු, කෙටි කොටස වන අතර, පිත සහ අග්නාශ යුෂ ආහාර සමඟ එකතු වන ස්ථානයයි." },
+      { id: "smallIntestine", name: "කුඩා බඩවැල", function: "ජෙජුනම් සහ ඉලියම් — බොහෝ පෝෂක රුධිර ප්‍රවාහයට අවශෝෂණය කරයි." },
+      { id: "largeIntestine", name: "මහා බඩවැල", function: "ජලය අවශෝෂණය කර ඝන අපද්‍රව්‍ය සාදයි, උපාංගය සහ ගුද මාර්ගය ඇතුළුව." },
+      { id: "liver", name: "අක්මාව", function: "රුධිරය පෙරා මේදය ජීර්ණය කිරීමට පිත නිපදවයි." },
+      { id: "gallbladder", name: "පිතාශය", function: "අක්මාවෙන් නිපදවන පිත ගබඩා කර සාන්ද්‍රණය කරයි." },
+      { id: "pancreas", name: "අග්නාශය", function: "ජීර්ණය සහ රුධිර සීනි නියාමනය කිරීමට එන්සයිම සහ ඉන්සුලින් නිපදවයි." },
+      { id: "bileDucts", name: "පිත නාල ජාලය", function: "අක්මාවෙන් සහ පිතාශයෙන් පිත ද, අග්නාශයෙන් ජීර්ණ එන්සයිම ද ග්‍රහණියට ගෙන යයි." },
     ],
   },
 
