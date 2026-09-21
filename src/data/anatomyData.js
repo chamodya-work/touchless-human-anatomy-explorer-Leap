@@ -110,25 +110,25 @@ export const SYSTEMS = {
 
   lungs: {
     id: "lungs",
-    label: "LUNGS",
+    label: "පෙනහළු",
     icon: "🫁",
-    summary: "The respiratory system exchanges oxygen and carbon dioxide",
-    name: "Lungs & Respiratory System",
-    function: "Exchanges oxygen and carbon dioxide between air and blood.",
-    structures: ["Trachea", "Bronchi", "Right lung", "Left lung", "Diaphragm"],
-    fact: "This model is built from a real human respiratory system, with the bronchial tree modeled all the way down to the tertiary (segmental) bronchi inside each lung.",
+    summary: "ශ්වසන පද්ධතිය ඔක්සිජන් සහ කාබන් ඩයොක්සයිඩ් හුවමාරු කරයි",
+    name: "පෙනහළු සහ ශ්වසන පද්ධතිය",
+    function: "වාතය සහ රුධිරය අතර ඔක්සිජන් සහ කාබන් ඩයොක්සයිඩ් හුවමාරු කරයි.",
+    structures: ["ශ්වාසනාලය", "ශ්වාස නාලිකා", "දකුණු පෙනහැල්ල", "වම් පෙනහැල්ල", "වක්‍ර පටලය"],
+    fact: "මෙම ආකෘතිය සැබෑ මිනිස් ශ්වසන පද්ධතියකින් නිර්මාණය කර ඇත, එහි ශ්වාස නාලිකා ගස එක් එක් පෙනහැල්ල තුළ තෘතීයික (කොටස්) ශ්වාස නාලිකා දක්වාම ආකෘතිගත කර ඇත.",
     simple:
-      "Air travels down the windpipe into two spongy lungs, where oxygen passes into the blood and carbon dioxide passes out. Every structure visible here (aside from the diaphragm) is real, individually modeled anatomy.",
+      "වාතය ශ්වාසනාලය හරහා පහළට ගොස් ස්පොන්ජියක් වැනි පෙනහළු දෙකකට ඇතුළු වේ; එහිදී ඔක්සිජන් රුධිරයට ඇතුළු වන අතර කාබන් ඩයොක්සයිඩ් ඉවත් වේ. මෙහි දැකිය හැකි සෑම ව්‍යුහයක්ම (වක්‍ර පටලය හැර) සැබෑ, තනි තනිව ආකෘතිගත කළ ව්‍යුහ විද්‍යාවකි.",
     // Categories from the real lungs.glb (87 meshes) -- see
     // src/anatomy/lungClassifier.js. The diaphragm is a small procedural
     // addition (see README/ATTRIBUTION) since it isn't part of this
     // respiratory-system dataset.
     parts: [
-      { id: "trachea", name: "Trachea", function: "The windpipe — carries air from the throat toward the lungs." },
-      { id: "bronchi", name: "Bronchi", function: "The branching airway tree, down to small tubes inside each lobe of the lungs." },
-      { id: "rightLung", name: "Right Lung", function: "Slightly larger lung, divided into three lobes." },
-      { id: "leftLung", name: "Left Lung", function: "Slightly smaller lung, divided into two lobes to make room for the heart." },
-      { id: "diaphragm", name: "Diaphragm", function: "The dome-shaped muscle beneath the lungs that drives breathing." },
+      { id: "trachea", name: "ශ්වාසනාලය", function: "ගෙලෙහි සිට පෙනහළු දෙසට වාතය ගෙන යන ශ්වාස නාලයයි." },
+      { id: "bronchi", name: "ශ්වාස නාලිකා", function: "අතු බෙදෙන වාතය ගමන් කරන ගස වන අතර, පෙනහැල්ලේ එක් එක් පෙත්ත තුළ ඇති කුඩා නාල දක්වා විහිදේ." },
+      { id: "rightLung", name: "දකුණු පෙනහැල්ල", function: "තරමක් විශාල පෙනහැල්ල වන අතර පෙත්ත තුනකට බෙදා ඇත." },
+      { id: "leftLung", name: "වම් පෙනහැල්ල", function: "හෘදයට ඉඩ සැලසීම සඳහා පෙත්ත දෙකකට බෙදා ඇති තරමක් කුඩා පෙනහැල්ල." },
+      { id: "diaphragm", name: "වක්‍ර පටලය", function: "පෙනහළු යටින් පිහිටි, හුස්ම ගැනීම මෙහෙයවන ගෝලාකාර පේශිය." },
     ],
   },
 
