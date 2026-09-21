@@ -245,25 +245,25 @@ export const SYSTEMS = {
 
   nervous: {
     id: "nervous",
-    label: "NERVOUS SYSTEM",
+    label: "ස්නායු පද්ධතිය",
     icon: "⚡",
-    summary: "The body's electrical communication network",
-    name: "Nervous System",
-    function: "Carries electrical signals between the brain, spinal cord and body.",
-    structures: ["Brain", "Cervical spinal cord", "Thoracic spinal cord", "Lumbar spinal cord", "Sacral spinal cord"],
-    fact: "This model combines the same real Allen Institute–mapped brain used in the Brain explorer with a real, individually-segmented human spinal cord — all 31 segments, from the neck down to the tailbone.",
+    summary: "සිරුරේ විද්‍යුත් සන්නිවේදන ජාලය",
+    name: "ස්නායු පද්ධතිය",
+    function: "මොළය, සුෂුම්නාව සහ සිරුර අතර විද්‍යුත් සංඥා ගෙන යයි.",
+    structures: ["මොළය", "ග්‍රීවා සුෂුම්නාව", "වක්ෂස්ථ සුෂුම්නාව", "කටි සුෂුම්නාව", "ත්‍රික සුෂුම්නාව"],
+    fact: "මෙම ආකෘතිය මොළ ගවේෂකයේ භාවිතා වන එම සැබෑ Allen Institute සිතියම්ගත මොළයම, සැබෑ, තනි තනිව කොටස් කළ මිනිස් සුෂුම්නාවක් සමඟ ඒකාබද්ධ කරයි — බෙල්ලේ සිට අලාභුව දක්වා කොටස් 31ම.",
     simple:
-      "Neurons pass tiny electrical signals to each other, letting your brain sense the world and control your muscles almost instantly. The brain and spinal cord together form the body's central command line.",
+      "න්‍යුරෝන එකිනෙකට කුඩා විද්‍යුත් සංඥා යවන අතර, එමගින් ඔබේ මොළයට ලෝකය දැනගෙන ඔබේ පේශි ක්ෂණිකව පාලනය කිරීමට හැකියාව ලැබේ. මොළය සහ සුෂුම්නාව එක්ව සිරුරේ මධ්‍යම අණදෙන මාර්ගය සාදයි.",
     // Brain (reused from brain.glb) + real spinal_cord.glb (30 segments,
     // grouped into 4 spinal regions) -- see
     // src/anatomy/spinalCordClassifier.js. Peripheral nerves are not
     // part of this dataset -- see README/ATTRIBUTION.
     parts: [
-      { id: "brainCore", name: "Brain", function: "Processes and originates most nerve signals." },
-      { id: "cervicalSpine", name: "Cervical Spinal Cord", function: "The topmost section, in the neck — carries signals to and from the arms and head." },
-      { id: "thoracicSpine", name: "Thoracic Spinal Cord", function: "The mid-back section — carries signals to and from the chest and abdomen." },
-      { id: "lumbarSpine", name: "Lumbar Spinal Cord", function: "The lower-back section — carries signals to and from the legs." },
-      { id: "sacralSpine", name: "Sacral Spinal Cord", function: "The lowest section — controls the bladder, bowel and parts of the legs." },
+      { id: "brainCore", name: "මොළය", function: "බොහෝ ස්නායු සංඥා සකස් කර ආරම්භ කරයි." },
+      { id: "cervicalSpine", name: "ග්‍රීවා සුෂුම්නාව", function: "ඉහළම කොටස වන අතර බෙල්ලේ පිහිටයි — අත් සහ හිස වෙතට සහ එතැනින් සංඥා ගෙන යයි." },
+      { id: "thoracicSpine", name: "වක්ෂස්ථ සුෂුම්නාව", function: "මධ්‍ය පිටු කොටස — පපුව සහ උදරය වෙතට සහ එතැනින් සංඥා ගෙන යයි." },
+      { id: "lumbarSpine", name: "කටි සුෂුම්නාව", function: "පහළ පිටු කොටස — කකුල් වෙතට සහ එතැනින් සංඥා ගෙන යයි." },
+      { id: "sacralSpine", name: "ත්‍රික සුෂුම්නාව", function: "පහළම කොටස — මුත්‍රාශය, බඩවැල සහ කකුල්වල කොටස් පාලනය කරයි." },
     ],
   },
 };
