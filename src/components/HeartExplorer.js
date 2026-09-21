@@ -56,6 +56,10 @@ export class HeartExplorer {
         scaleReferenceTag: "heart",
         targetSize: 1.4,
       });
+      // The combined loader sets the final scale and position after its
+      // bounding-box calculation. Refresh the transform before converting
+      // mesh centers into model-local blood-flow coordinates.
+      model.updateMatrixWorld(true);
 
       const selectable = [];
       const centersByPart = {};
@@ -120,15 +124,32 @@ export class HeartExplorer {
       // malformed curve.
       this._flowCurve = null;
     } else {
-      this._flowCurve = new THREE.CatmullRomCurve3(points, true);
+      // Use explicit directional segments and one return segment instead of
+      // a closed spline. A closed Catmull-Rom curve can cut across chambers
+      // and create an anatomically confusing shortcut from the aorta to the
+      // vena cava.
+      this._flowCurve = buildBloodFlowCurve(points);
     }
 
-    const count = 60;
+    const count = 84;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const mat = new THREE.PointsMaterial({ color: PALETTE.artery, size: 0.045, transparent: true, opacity: 0 });
+    geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    const mat = new THREE.PointsMaterial({
+      vertexColors: true,
+      size: 0.042,
+      transparent: true,
+      opacity: 0,
+      depthTest: false,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true,
+    });
     const particles = new THREE.Points(geo, mat);
+    particles.renderOrder = 15;
+    particles.frustumCulled = false;
     model.add(particles);
 
     const fader = new OpacityFader(particles, 0.95, 0.4);
@@ -136,18 +157,30 @@ export class HeartExplorer {
     this._flowFader = fader;
     this._flowCount = count;
     this._flowProgress = 0;
+    const venous = new THREE.Color(PALETTE.vein);
+    const arterial = new THREE.Color(PALETTE.artery);
+    const flowColor = new THREE.Color();
 
     model.userData.onFrame = (dt) => {
       fader.update(dt);
       if (!this.bloodFlowActive || !this._flowCurve) return;
-      this._flowProgress = (this._flowProgress + dt * 0.12) % 1;
+      this._flowProgress = (this._flowProgress + dt * 0.085) % 1;
       const pos = particles.geometry.attributes.position;
+      const color = particles.geometry.attributes.color;
       for (let i = 0; i < this._flowCount; i++) {
         const t = (this._flowProgress + i / this._flowCount) % 1;
         const p = this._flowCurve.getPointAt(t);
         pos.setXYZ(i, p.x, p.y, p.z);
+
+        // Deoxygenated blood returns blue through the first half of the
+        // route; oxygenated blood leaves the left ventricle red. Blend the
+        // hand-off around the lungs instead of changing color abruptly.
+        const oxygenation = Math.max(0, Math.min(1, (t - 0.42) / 0.14));
+        flowColor.copy(venous).lerp(arterial, oxygenation);
+        color.setXYZ(i, flowColor.r, flowColor.g, flowColor.b);
       }
       pos.needsUpdate = true;
+      color.needsUpdate = true;
     };
   }
 
@@ -172,6 +205,25 @@ export class HeartExplorer {
     this.viewer.onSelect = null;
     this.viewer.clearModel();
   }
+}
+
+function buildBloodFlowCurve(points) {
+  const path = new THREE.CurvePath();
+  const route = [...points, points[0]];
+
+  for (let i = 0; i < route.length - 1; i++) {
+    const start = route[i];
+    const end = route[i + 1];
+    const midpoint = start.clone().lerp(end, 0.5);
+    const distance = start.distanceTo(end);
+
+    // A small alternating bow keeps adjacent streams visually separate while
+    // preserving the intended chamber-to-chamber direction.
+    midpoint.z += (i % 2 === 0 ? 1 : -1) * distance * 0.12;
+    path.add(new THREE.QuadraticBezierCurve3(start, midpoint, end));
+  }
+
+  return path;
 }
 
 /**
