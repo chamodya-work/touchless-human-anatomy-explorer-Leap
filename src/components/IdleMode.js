@@ -7,16 +7,23 @@
  * owns the idle timer since it must watch ALL app states).
  * -----------------------------------------------------------------------
  */
+import { t, onLanguageChange } from "../data/i18n.js";
+
 export const IDLE_TIMEOUT_MS = 30000;
 
 export class IdleMode {
   constructor(root) {
     this.root = root;
     this.root.className = "idle-mode hidden";
+    this._build();
+    onLanguageChange(() => this._build());
+  }
+
+  _build() {
     this.root.innerHTML = `
       <div class="idle-mode__inner">
         <div class="idle-mode__pulse">👋</div>
-        <p class="idle-mode__text">Wave your hand to explore</p>
+        <p class="idle-mode__text">${t("idleText")}</p>
       </div>
     `;
   }

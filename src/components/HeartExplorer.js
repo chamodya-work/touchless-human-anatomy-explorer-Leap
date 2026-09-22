@@ -16,9 +16,10 @@ import { loadCombinedAnatomyModel } from "../anatomy/ModelLoader.js";
 import { classifyHeartPart } from "../anatomy/heartClassifier.js";
 import { buildHeartModel } from "../anatomy/heartModel.js";
 import { getModelInfo } from "../data/modelManifest.js";
-import { SYSTEMS } from "../data/anatomyData.js";
+import { getSystem } from "../data/anatomyData.js";
 import { PALETTE } from "../anatomy/materials.js";
 import { OpacityFader } from "../anatomy/fade.js";
+import { t, getLang, onLanguageChange } from "../data/i18n.js";
 
 const TISSUE_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xb5423c, roughness: 0.45, metalness: 0.05 });
 const VESSEL_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xc03a3a, roughness: 0.4, metalness: 0.05 });
@@ -35,12 +36,16 @@ export class HeartExplorer {
     this.viewer = viewer;
     this.infoPanel = infoPanel;
     this.controlsRoot = controlsRoot;
-    this.system = SYSTEMS.heart;
+    this.system = getSystem("heart", getLang());
     this.bloodFlowActive = false;
+    this._usedRealModel = false;
+    this._langUnsub = null;
   }
 
   async mount() {
-    this.controlsRoot.innerHTML = '<p class="model-status" id="heart-status">Loading real anatomical model...</p>';
+    this.controlsRoot.innerHTML = `<p class="model-status" id="heart-status">${t("modelLoading")}</p>`;
+    // Resolve the content in whichever language is currently selected.
+    this.system = getSystem("heart", getLang());
     let model;
     let usedRealModel = false;
     let waypoints = null;
@@ -107,12 +112,15 @@ export class HeartExplorer {
     };
 
     this._buildBloodFlowParticles(model, waypoints || model.userData.bloodFlowWaypoints);
-    this._renderControls(
-      usedRealModel
-        ? "Real human heart & vessels \u00b7 HuBMAP Human Reference Atlas (CC BY 4.0)"
-        : "Placeholder model -- see README",
-      !usedRealModel
-    );
+    this._usedRealModel = usedRealModel;
+    this._renderControls();
+
+    // If the visitor switches language while this explorer is open, swap
+    // the control strip (and this.system) into the new language.
+    this._langUnsub = onLanguageChange(() => {
+      this.system = getSystem("heart", getLang());
+      this._renderControls();
+    });
   }
 
   _buildBloodFlowParticles(model, waypoints) {
@@ -184,11 +192,12 @@ export class HeartExplorer {
     };
   }
 
-  _renderControls(statusText, isFallback) {
+  _renderControls() {
+    const statusText = this._usedRealModel ? t("statusHeart") : t("modelPlaceholder");
     this.controlsRoot.innerHTML = `
-      <p class="model-status${isFallback ? " model-status--fallback" : ""}">${statusText}</p>
+      <p class="model-status${this._usedRealModel ? "" : " model-status--fallback"}">${statusText}</p>
       <button class="mode-toggle" data-selectable id="blood-flow-toggle">
-        <span class="mode-toggle__icon">\u{1FA78}</span> Blood Flow Animation
+        <span class="mode-toggle__icon">\u{1FA78}</span> ${t("toggleBloodFlow")}
       </button>
     `;
     const btn = this.controlsRoot.querySelector("#blood-flow-toggle");
@@ -198,9 +207,16 @@ export class HeartExplorer {
       this._flowFader.setOn(this.bloodFlowActive);
       btn.classList.toggle("mode-toggle--active", this.bloodFlowActive);
     });
+    // A language switch rebuilds this button, so restore whatever state the
+    // visitor had already toggled instead of silently switching it off.
+    btn.classList.toggle("mode-toggle--active", this.bloodFlowActive);
   }
 
   unmount() {
+    if (this._langUnsub) {
+      this._langUnsub();
+      this._langUnsub = null;
+    }
     this.controlsRoot.innerHTML = "";
     this.viewer.onSelect = null;
     this.viewer.clearModel();

@@ -18,7 +18,8 @@ import { loadCombinedAnatomyModel } from "../anatomy/ModelLoader.js";
 import { classifyDigestivePart } from "../anatomy/digestiveClassifier.js";
 import { buildGenericSystemModel } from "../anatomy/genericSystemModel.js";
 import { getModelInfo } from "../data/modelManifest.js";
-import { SYSTEMS } from "../data/anatomyData.js";
+import { getSystem } from "../data/anatomyData.js";
+import { t, getLang, onLanguageChange } from "../data/i18n.js";
 
 const PART_COLORS = {
   liver: 0x8a4a3d,
@@ -67,11 +68,15 @@ export class DigestiveExplorer {
     this.viewer = viewer;
     this.infoPanel = infoPanel;
     this.controlsRoot = controlsRoot;
-    this.system = SYSTEMS.digestive;
+    this.system = getSystem("digestive", getLang());
+    this._usedRealModel = false;
+    this._langUnsub = null;
   }
 
   async mount() {
-    this.controlsRoot.innerHTML = '<p class="model-status" id="digestive-status">Loading real anatomical model...</p>';
+    this.controlsRoot.innerHTML = `<p class="model-status" id="digestive-status">${t("modelLoading")}</p>`;
+    // Resolve the content in whichever language is currently selected.
+    this.system = getSystem("digestive", getLang());
     let model;
     let usedRealModel = false;
 
@@ -133,14 +138,32 @@ export class DigestiveExplorer {
       }
     };
 
-    this.controlsRoot.innerHTML = `<p class="model-status${usedRealModel ? "" : " model-status--fallback"}">${
-      usedRealModel
-        ? "Real liver, pancreas, gallbladder & intestines \u00b7 HuBMAP Human Reference Atlas (CC BY 4.0)"
-        : "Placeholder model -- see README"
-    }</p>`;
+    this._usedRealModel = usedRealModel;
+    this._renderStatus();
+
+    // Re-label the status line if the visitor switches language while this
+    // explorer is open.
+    this._langUnsub = onLanguageChange(() => {
+      this.system = getSystem("digestive", getLang());
+      this._renderStatus();
+    });
+  }
+
+  /**
+   * Rebuilds the one-line model-status strip. Called on mount and again on
+   * every language change.
+   */
+  _renderStatus() {
+    this.controlsRoot.innerHTML = `<p class="model-status${
+      this._usedRealModel ? "" : " model-status--fallback"
+    }">${this._usedRealModel ? t("statusDigestive") : t("modelPlaceholder")}</p>`;
   }
 
   unmount() {
+    if (this._langUnsub) {
+      this._langUnsub();
+      this._langUnsub = null;
+    }
     this.controlsRoot.innerHTML = "";
     this.viewer.onSelect = null;
     this.viewer.clearModel();

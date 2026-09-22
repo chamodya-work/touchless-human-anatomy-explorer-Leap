@@ -41,12 +41,17 @@ import { NervousExplorer } from "./components/NervousExplorer.js";
 import { GenericExplorer } from "./components/GenericExplorer.js";
 
 import { buildBodyModel } from "./anatomy/bodyModel.js";
-import { SYSTEMS } from "./data/anatomyData.js";
+import { getSystem } from "./data/anatomyData.js";
+import { initLanguage, onLanguageChange, t, getLang } from "./data/i18n.js";
 
 const STATE = { WELCOME: "welcome", MENU: "menu", EXPLORER: "explorer" };
 
 class App {
   constructor() {
+    // Resolve the saved/detected language BEFORE any component is built, so
+    // the very first paint is already in the right language.
+    initLanguage();
+
     this.state = STATE.WELCOME;
     this.currentSystemId = null;
     this.currentExplorer = null;
@@ -63,6 +68,11 @@ class App {
 
     this.welcome = new WelcomeScreen(this.dom.welcome, () => this._enterMenu());
     this.menu = new MainMenu(this.dom.menu, (systemId) => this._enterExplorer(systemId));
+
+    // Static chrome lives in index.html, so refresh it (now and on every
+    // language switch) separately from the components that render themselves.
+    this._applyChrome();
+    onLanguageChange(() => this._applyChrome());
 
     this._bindBackButton();
     this._bindGlobalGestures();
@@ -92,6 +102,20 @@ class App {
     };
   }
 
+  // ---- language / static chrome ----------------------------------------
+  /**
+   * index.html ships the title bar, Back button and pause toast with English
+   * text so the page is readable even before the modules load. This keeps
+   * them in whichever language is currently active.
+   */
+  _applyChrome() {
+    document.title = t("appTitle");
+    // innerHTML (not textContent) so the little status dot span survives.
+    this.dom.appTitle.innerHTML = `<span class="app-title-bar__dot"></span>${t("appTitle")}`;
+    this.dom.backBtn.textContent = t("backToMenu");
+    this.dom.pauseToast.textContent = t("pauseToast");
+  }
+
   // ---- input backends --------------------------------------------------
   async _initInputBackends() {
     this.mouseAdapter = new MouseInputAdapter(handTracking);
@@ -117,12 +141,10 @@ class App {
 
     const connected = await this.leapAdapter.connect();
     if (!connected) {
-      this._showTrackingBanner(
-        "Hand tracking unavailable. Use mouse interaction for demonstration."
-      );
+      this._showTrackingBanner(t("bannerNoTracking"));
       this.mouseAdapter.start();
     } else {
-      this._showTrackingBanner("Leap Motion LM-010 connected.", 3000);
+      this._showTrackingBanner(t("bannerLeapConnected"), 3000);
     }
   }
 
@@ -319,7 +341,7 @@ class App {
         explorer = new NervousExplorer(deps);
         break;
       default:
-        explorer = new GenericExplorer(deps, SYSTEMS[systemId]);
+        explorer = new GenericExplorer(deps, getSystem(systemId, getLang()));
     }
     this.currentExplorer = explorer;
     this.currentSystemId = systemId;

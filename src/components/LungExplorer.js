@@ -17,9 +17,10 @@ import { loadAnatomyModel } from "../anatomy/ModelLoader.js";
 import { classifyLungPart } from "../anatomy/lungClassifier.js";
 import { buildLungsModel } from "../anatomy/lungsModel.js";
 import { getModelInfo } from "../data/modelManifest.js";
-import { SYSTEMS } from "../data/anatomyData.js";
+import { getSystem } from "../data/anatomyData.js";
 import { PALETTE } from "../anatomy/materials.js";
 import { OpacityFader } from "../anatomy/fade.js";
+import { t, getLang, onLanguageChange } from "../data/i18n.js";
 
 const LUNG_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xd98a92, roughness: 0.55, metalness: 0.02 });
 const AIRWAY_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xcbb8ae, roughness: 0.5, metalness: 0.02 });
@@ -44,12 +45,16 @@ export class LungExplorer {
     this.viewer = viewer;
     this.infoPanel = infoPanel;
     this.controlsRoot = controlsRoot;
-    this.system = SYSTEMS.lungs;
+    this.system = getSystem("lungs", getLang());
     this.breathingActive = false;
+    this._usedRealModel = false;
+    this._langUnsub = null;
   }
 
   async mount() {
-    this.controlsRoot.innerHTML = '<p class="model-status" id="lung-status">Loading real anatomical model...</p>';
+    this.controlsRoot.innerHTML = `<p class="model-status" id="lung-status">${t("modelLoading")}</p>`;
+    // Resolve the content in whichever language is currently selected.
+    this.system = getSystem("lungs", getLang());
     let model;
     let usedRealModel = false;
     let breathingParts = null;
@@ -111,12 +116,15 @@ export class LungExplorer {
       this._buildBreathingAnimationProcedural(model);
     }
 
-    this._renderControls(
-      usedRealModel
-        ? "Real human respiratory system \u00b7 HuBMAP Human Reference Atlas (CC BY 4.0)"
-        : "Placeholder model -- see README",
-      !usedRealModel
-    );
+    this._usedRealModel = usedRealModel;
+    this._renderControls();
+
+    // If the visitor switches language while this explorer is open, swap
+    // the control strip (and this.system) into the new language.
+    this._langUnsub = onLanguageChange(() => {
+      this.system = getSystem("lungs", getLang());
+      this._renderControls();
+    });
   }
 
   _buildBreathingAnimationReal(model, { lungMeshesByPart, diaphragm }) {
@@ -204,11 +212,12 @@ export class LungExplorer {
     this._airflowFader = fader;
   }
 
-  _renderControls(statusText, isFallback) {
+  _renderControls() {
+    const statusText = this._usedRealModel ? t("statusLungs") : t("modelPlaceholder");
     this.controlsRoot.innerHTML = `
-      <p class="model-status${isFallback ? " model-status--fallback" : ""}">${statusText}</p>
+      <p class="model-status${this._usedRealModel ? "" : " model-status--fallback"}">${statusText}</p>
       <button class="mode-toggle" data-selectable id="breathing-toggle">
-        <span class="mode-toggle__icon">\ud83c\udf2c</span> Breathing Mode
+        <span class="mode-toggle__icon">\ud83c\udf2c</span> ${t("toggleBreathing")}
       </button>
       <p class="mode-explainer" id="breathing-explainer"></p>
     `;
@@ -218,13 +227,19 @@ export class LungExplorer {
       this.breathingActive = !this.breathingActive;
       this._airflowFader.setOn(this.breathingActive);
       btn.classList.toggle("mode-toggle--active", this.breathingActive);
-      explainer.textContent = this.breathingActive
-        ? "Inhale: the diaphragm pulls down and lungs expand. Exhale: they relax and air flows out."
-        : "";
+      explainer.textContent = this.breathingActive ? t("breathingHintOn") : "";
     });
+    // A language switch rebuilds this control strip, so restore whatever
+    // state (and explainer text) the visitor already had.
+    btn.classList.toggle("mode-toggle--active", this.breathingActive);
+    explainer.textContent = this.breathingActive ? t("breathingHintOn") : "";
   }
 
   unmount() {
+    if (this._langUnsub) {
+      this._langUnsub();
+      this._langUnsub = null;
+    }
     this.controlsRoot.innerHTML = "";
     this.viewer.onSelect = null;
     this.viewer.clearModel();

@@ -16,9 +16,10 @@ import { loadAnatomyModel } from "../anatomy/ModelLoader.js";
 import { classifyBrainRegion } from "../anatomy/brainClassifier.js";
 import { buildBrainModel } from "../anatomy/brainModel.js";
 import { getModelInfo } from "../data/modelManifest.js";
-import { SYSTEMS } from "../data/anatomyData.js";
+import { getSystem } from "../data/anatomyData.js";
 import { PALETTE } from "../anatomy/materials.js";
 import { OpacityFader } from "../anatomy/fade.js";
+import { t, getLang, onLanguageChange } from "../data/i18n.js";
 
 const REGION_COLORS = {
   frontal: 0xcf7a92,
@@ -43,12 +44,16 @@ export class BrainExplorer {
     this.viewer = viewer;
     this.infoPanel = infoPanel;
     this.controlsRoot = controlsRoot;
-    this.system = SYSTEMS.brain;
+    this.system = getSystem("brain", getLang());
     this.activityActive = false;
+    this._usedRealModel = false;
+    this._langUnsub = null;
   }
 
   async mount() {
-    this.controlsRoot.innerHTML = '<p class="model-status" id="brain-status">Loading real anatomical model...</p>';
+    this.controlsRoot.innerHTML = `<p class="model-status" id="brain-status">${t("modelLoading")}</p>`;
+    // Resolve the content in whichever language is currently selected.
+    this.system = getSystem("brain", getLang());
     let model;
     let usedRealModel = false;
 
@@ -91,12 +96,15 @@ export class BrainExplorer {
       }
     };
 
-    this._renderControls(
-      usedRealModel
-        ? "Real human brain \u00b7 286 structures \u00b7 HuBMAP / Allen Institute (CC BY 4.0)"
-        : "Placeholder model -- see README",
-      !usedRealModel
-    );
+    this._usedRealModel = usedRealModel;
+    this._renderControls();
+
+    // If the visitor switches language while this explorer is open, swap
+    // the control strip (and this.system) into the new language.
+    this._langUnsub = onLanguageChange(() => {
+      this.system = getSystem("brain", getLang());
+      this._renderControls();
+    });
   }
 
   _buildActivityOverlay(model) {
@@ -240,11 +248,12 @@ export class BrainExplorer {
     this._activityFader = fader;
   }
 
-  _renderControls(statusText, isFallback) {
+  _renderControls() {
+    const statusText = this._usedRealModel ? t("statusBrain") : t("modelPlaceholder");
     this.controlsRoot.innerHTML = `
-      <p class="model-status${isFallback ? " model-status--fallback" : ""}">${statusText}</p>
+      <p class="model-status${this._usedRealModel ? "" : " model-status--fallback"}">${statusText}</p>
       <button class="mode-toggle" data-selectable id="brain-activity-toggle">
-        <span class="mode-toggle__icon">\u26a1</span> Brain Activity Visualization
+        <span class="mode-toggle__icon">\u26a1</span> ${t("toggleBrainActivity")}
       </button>
     `;
     const btn = this.controlsRoot.querySelector("#brain-activity-toggle");
@@ -253,9 +262,16 @@ export class BrainExplorer {
       this._activityFader.setOn(this.activityActive);
       btn.classList.toggle("mode-toggle--active", this.activityActive);
     });
+    // A language switch rebuilds this button, so restore whatever state the
+    // visitor had already toggled instead of silently switching it off.
+    btn.classList.toggle("mode-toggle--active", this.activityActive);
   }
 
   unmount() {
+    if (this._langUnsub) {
+      this._langUnsub();
+      this._langUnsub = null;
+    }
     this.controlsRoot.innerHTML = "";
     this.viewer.onSelect = null;
     this.viewer.clearModel();

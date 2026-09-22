@@ -14,7 +14,8 @@ import { loadAnatomyModel } from "../anatomy/ModelLoader.js";
 import { classifyBone } from "../anatomy/boneClassifier.js";
 import { buildSkeletonModel } from "../anatomy/skeletonModel.js";
 import { getModelInfo } from "../data/modelManifest.js";
-import { SYSTEMS } from "../data/anatomyData.js";
+import { getSystem } from "../data/anatomyData.js";
+import { t, getLang, onLanguageChange } from "../data/i18n.js";
 
 const BONE_MATERIAL = new THREE.MeshStandardMaterial({
   color: 0xe9e3d3,
@@ -27,11 +28,15 @@ export class SkeletonExplorer {
     this.viewer = viewer;
     this.infoPanel = infoPanel;
     this.controlsRoot = controlsRoot;
-    this.system = SYSTEMS.skeleton;
+    this.system = getSystem("skeleton", getLang());
+    this._usedRealModel = false;
+    this._langUnsub = null;
   }
 
   async mount() {
-    this.controlsRoot.innerHTML = '<p class="model-status" id="skeleton-status">Loading real anatomical model...</p>';
+    this.controlsRoot.innerHTML = `<p class="model-status" id="skeleton-status">${t("modelLoading")}</p>`;
+    // Resolve the content in whichever language is currently selected.
+    this.system = getSystem("skeleton", getLang());
     let model;
     let usedRealModel = false;
 
@@ -69,16 +74,32 @@ export class SkeletonExplorer {
       }
     };
 
-    const statusEl = this.controlsRoot.querySelector("#skeleton-status");
-    if (statusEl) {
-      statusEl.textContent = usedRealModel
-        ? "202 real bones \u00b7 BodyParts3D (CC BY-SA)"
-        : "Placeholder model -- see README";
-      statusEl.classList.toggle("model-status--fallback", !usedRealModel);
-    }
+    this._usedRealModel = usedRealModel;
+    this._renderStatus();
+
+    // Re-label the status line if the visitor switches language while this
+    // explorer is open.
+    this._langUnsub = onLanguageChange(() => {
+      this.system = getSystem("skeleton", getLang());
+      this._renderStatus();
+    });
+  }
+
+  /**
+   * Rebuilds the one-line model-status strip. Called on mount and again on
+   * every language change.
+   */
+  _renderStatus() {
+    this.controlsRoot.innerHTML = `<p class="model-status${
+      this._usedRealModel ? "" : " model-status--fallback"
+    }">${this._usedRealModel ? t("statusSkeleton") : t("modelPlaceholder")}</p>`;
   }
 
   unmount() {
+    if (this._langUnsub) {
+      this._langUnsub();
+      this._langUnsub = null;
+    }
     this.controlsRoot.innerHTML = "";
     this.viewer.onSelect = null;
     this.viewer.clearModel();

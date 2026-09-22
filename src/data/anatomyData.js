@@ -5,6 +5,12 @@
  * All anatomical text, facts and structure lists live here, completely
  * separated from rendering / UI code, as required by the brief.
  *
+ * ENGLISH IS THE SOURCE LANGUAGE. The Sinhala (සිංහල) translation lives in
+ * anatomyData.si.js as a separate overlay keyed by the same system + part
+ * ids, so the two languages never drift structurally and the stable `id`
+ * values the classifiers depend on are language-independent.
+ * Read whichever language is on screen with getSystem(id, lang).
+ *
  * Every system exposes:
  *   - id, label, icon (emoji fallback, replace with SVG icon if desired)
  *   - summary: short line shown on the main menu
@@ -16,6 +22,7 @@
  * not constitute medical advice, diagnosis or treatment guidance.
  * -----------------------------------------------------------------------
  */
+import { SI_DISCLAIMER, SI_SYSTEMS } from "./anatomyData.si.js";
 
 export const DISCLAIMER =
   "For educational purposes only. This exhibit does not provide medical diagnosis or treatment advice.";
@@ -23,78 +30,77 @@ export const DISCLAIMER =
 export const SYSTEMS = {
   brain: {
     id: "brain",
-    label: "මොළය",
+    label: "BRAIN",
     icon: "🧠",
-    summary: "ස්නායු පද්ධතියේ අණදෙන මධ්‍යස්ථානය",
-    name: "මොළය",
-    function: "සිතීම, චලනය, මතකය සහ සිරුරේ සෑම ක්‍රියාවක්ම පාලනය කරයි.",
+    summary: "The command center of the nervous system",
+    name: "Brain",
+    function: "Controls thought, movement, memory and every body function.",
     structures: [
-      "පෙර මොළ පෙත්ත",
-      "පැරියටල් පෙත්ත",
-      "ටෙම්පොරල් පෙත්ත",
-      "ඔක්සිපිටල් පෙත්ත",
-      "කුඩා මොළය",
-      "මොළ කඳ",
-      "ගැඹුරු මොළ ව්‍යුහ",
+      "Frontal lobe",
+      "Parietal lobe",
+      "Temporal lobe",
+      "Occipital lobe",
+      "Cerebellum",
+      "Brain stem",
+      "Deep brain structures",
     ],
-    fact: "මෙම ආකෘතිය සැබෑ මිනිස් මොළයකින් නිර්මාණය කර ඇත — Allen Institute for Brain Science සමඟ සහයෝගයෙන් සිතියම්ගත කර ඇත — තනි තනිව හඳුනාගත් ව්‍යුහ 286ක් සහිතව, තනි තැලමික් න්‍යෂ්ටි දක්වා.",
+    fact: "This model is built from a real human brain — mapped in collaboration with the Allen Institute for Brain Science — with 286 individually identified structures, right down to individual thalamic nuclei.",
     simple:
-      "මොළය මෙහෙයුම් මධ්‍යස්ථානයක් ලෙස සිතන්න — එය ඔබේ ඉන්ද්‍රියයන්ගෙන් සංඥා ලබාගෙන ඔබේ සිරුරේ අනෙක් කොටස්වලට උපදෙස් යවයි. මෙහි දැකිය හැකි සෑම ව්‍යුහයක්ම සැබෑ පරිත්‍යාගශීලී මිනිස් මොළයකින් ලබාගත් සැබෑ එකකි.",
+      "Think of the brain as mission control — it receives signals from your senses and sends instructions to the rest of your body. Every structure visible here is real, from a real donated human brain.",
     // 7 categories that the real brain.glb's 286 individually-named
     // structures are grouped into for public-friendly selection (see
     // src/anatomy/brainClassifier.js).
     parts: [
-      { id: "frontal", name: "පෙර මොළ පෙත්ත", function: "තීරණ ගැනීම, පෞරුෂය, සැලසුම් කිරීම සහ ස්වේච්ඡා චලනය පාලනය කරයි." },
-      { id: "parietal", name: "පැරියටල් පෙත්ත", function: "ස්පර්ශය, උෂ්ණත්වය, වේදනාව සහ අවකාශ දැනුවත්භාවය සකසයි." },
-      { id: "temporal", name: "ටෙම්පොරල් පෙත්ත", function: "ශ්‍රවණය, භාෂාව සහ මතකය ගොඩනැගීම සකසයි." },
-      { id: "occipital", name: "ඔක්සිපිටල් පෙත්ත", function: "ඇස්වලින් ලැබෙන දෘශ්‍ය තොරතුරු සකසයි." },
-      { id: "cerebellum", name: "කුඩා මොළය", function: "සමතුලිතතාව, ඉරියව්ව සහ සියුම් චලන පාලනය සම්බන්ධීකරණය කරයි." },
-      { id: "brainstem", name: "මොළ කඳ", function: "හුස්ම ගැනීම සහ හෘද ස්පන්දන වේගය නියාමනය කරන අතර මොළය සුෂුම්නාවට සම්බන්ධ කරයි." },
+      { id: "frontal", name: "Frontal Lobe", function: "Handles decision making, personality, planning and voluntary movement." },
+      { id: "parietal", name: "Parietal Lobe", function: "Processes touch, temperature, pain and spatial awareness." },
+      { id: "temporal", name: "Temporal Lobe", function: "Processes hearing, language and memory formation." },
+      { id: "occipital", name: "Occipital Lobe", function: "Processes visual information from the eyes." },
+      { id: "cerebellum", name: "Cerebellum", function: "Coordinates balance, posture and fine motor control." },
+      { id: "brainstem", name: "Brain Stem", function: "Regulates breathing, heart rate and connects the brain to the spinal cord." },
       {
         id: "deepBrain",
-        name: "ගැඹුරු මොළ ව්‍යුහ",
+        name: "Deep Brain Structures",
         function:
-          "මොළයේ ගැඹුරින් පිහිටි ව්‍යුහ සමූහයක් — තැලමස්, හයිපොතැලමස් සහ බේසල් ගැංග්ලියා ඇතුළුව — හැඟීම්, මතකය, හෝමෝන සහ චලන පාලනයට සම්බන්ධයි.",
+          "A group of structures buried deep in the brain — including the thalamus, hypothalamus and basal ganglia — involved in emotion, memory, hormones and controlling movement.",
       },
     ],
   },
-
   heart: {
     id: "heart",
-    label: "හෘදය",
+    label: "HEART",
     icon: "❤",
-    summary: "ඔබේ සිරුර පුරා රුධිරය ගෙන යන පොම්පය",
-    name: "හෘදය",
-    function: "සිරුර පුරා රුධිරය පොම්ප කරයි.",
+    summary: "The pump that moves blood through your body",
+    name: "Heart",
+    function: "Pumps blood throughout the body.",
     structures: [
-      "දකුණු කර්ණිකාව",
-      "දකුණු කෝෂිකාව",
-      "වම් කර්ණිකාව",
-      "වම් කෝෂිකාව",
-      "කපාට",
-      "මහා ධමනිය සහ ප්‍රධාන රුධිර නාල",
-      "කොරොනරි ධමනි",
+      "Right atrium",
+      "Right ventricle",
+      "Left atrium",
+      "Left ventricle",
+      "Valves",
+      "Aorta & major vessels",
+      "Coronary arteries",
     ],
-    fact: "මෙම ආකෘතිය සැබෑ මිනිස් හෘදයකින් නිර්මාණය කර ඇත, එහි සැබෑ කොරොනරි ධමනි ද ඇතුළත්ව — එනම් හෘද පේශිවලටම රුධිරය සපයන රුධිර නාලයන්ය.",
+    fact: "This model is built from a real human heart, including its own real coronary arteries — the vessels that supply the heart muscle itself with blood.",
     simple:
-      "හෘදය යනු කුටීර හතරකට බෙදුණු පේශිමය පොම්පයක් වන අතර එය ඔබේ පෙනහළුවලට සහ සිරුරේ අනෙක් කොටස්වලට රුධිරය තල්ලු කරයි. මෙහි දැකිය හැකි සෑම ව්‍යුහයක්ම සැබෑ, තනි තනිව ආකෘතිගත කළ ව්‍යුහ විද්‍යාවකි.",
+      "The heart is a muscular pump split into four chambers that push blood to your lungs and the rest of your body. Every structure visible here is real, individually modeled anatomy.",
     // Categories from the real heart.glb (14 meshes) + heart_vessels.glb
     // (50 meshes) -- see src/anatomy/heartClassifier.js.
     parts: [
-      { id: "rightAtrium", name: "දකුණු කර්ණිකාව", function: "සිරුරෙන් ආපසු පැමිණෙන ඔක්සිජන් අඩු රුධිරය ලබා ගනී." },
-      { id: "rightVentricle", name: "දකුණු කෝෂිකාව", function: "ඔක්සිජන් අඩු රුධිරය පෙනහළුවලට පොම්ප කරයි." },
-      { id: "leftAtrium", name: "වම් කර්ණිකාව", function: "පෙනහළුවලින් ආපසු පැමිණෙන ඔක්සිජන් බහුල රුධිරය ලබා ගනී." },
-      { id: "leftVentricle", name: "වම් කෝෂිකාව", function: "හෘදයේ වඩාත්ම බලවත් කුටීරය — ඔක්සිජන් බහුල රුධිරය මුළු සිරුරටම පොම්ප කරයි." },
-      { id: "septum", name: "කෝෂිකා අතර තිරය", function: "හෘදයේ පහළ කුටීර දෙක වෙන් කරන පේශිමය බිත්තිය." },
-      { id: "papillaryMuscle", name: "පැපිලරි පේශි", function: "හෘද කපාට ස්ථානගත කර ඒවා පසුපසට හැරවීම වළක්වන කුඩා පේශි." },
-      { id: "mitralValve", name: "මිට්‍රල් කපාටය", function: "වම් කර්ණිකාවේ සිට වම් කෝෂිකාවට රුධිර ප්‍රවාහය පාලනය කරයි." },
-      { id: "tricuspidValve", name: "ට්‍රයිකස්පිඩ් කපාටය", function: "දකුණු කර්ණිකාවේ සිට දකුණු කෝෂිකාවට රුධිර ප්‍රවාහය පාලනය කරයි." },
-      { id: "aorticValve", name: "මහා ධමනි කපාටය", function: "වම් කෝෂිකාවෙන් මහා ධමනියට යන රුධිරය පාලනය කරයි." },
-      { id: "pulmonaryValve", name: "පුප්ඵුසීය කපාටය", function: "දකුණු කෝෂිකාවෙන් පෙනහළු දෙසට යන රුධිරය පාලනය කරයි." },
-      { id: "aorta", name: "මහා ධමනිය", function: "සිරුරේ විශාලතම ධමනිය වන අතර ඔක්සිජන් බහුල රුධිරය හෘදයෙන් ඉවතට ගෙන යයි." },
-      { id: "pulmonaryVessels", name: "පුප්ඵුසීය රුධිර නාල", function: "ඔක්සිජන් ලබා ගැනීම සඳහා හෘදය සහ පෙනහළු අතර රුධිරය ගෙන යයි." },
-      { id: "venaCava", name: "මහා ශිරාව", function: "සිරුරේ විශාලතම ශිරා වන අතර ඔක්සිජන් අඩු රුධිරය හෘදයට ආපසු ගෙන එයි." },
-      { id: "coronaryArteries", name: "කොරොනරි ධමනි", function: "හෘද පේශිවලටම ඔක්සිජන් බහුල රුධිරය සපයයි." },
+      { id: "rightAtrium", name: "Right Atrium", function: "Receives oxygen-poor blood returning from the body." },
+      { id: "rightVentricle", name: "Right Ventricle", function: "Pumps oxygen-poor blood to the lungs." },
+      { id: "leftAtrium", name: "Left Atrium", function: "Receives oxygen-rich blood returning from the lungs." },
+      { id: "leftVentricle", name: "Left Ventricle", function: "The heart's strongest chamber — pumps oxygen-rich blood to the whole body." },
+      { id: "septum", name: "Interventricular Septum", function: "The muscular wall separating the heart's two lower chambers." },
+      { id: "papillaryMuscle", name: "Papillary Muscles", function: "Small muscles that anchor the heart valves and stop them flipping open backward." },
+      { id: "mitralValve", name: "Mitral Valve", function: "Controls blood flow from the left atrium into the left ventricle." },
+      { id: "tricuspidValve", name: "Tricuspid Valve", function: "Controls blood flow from the right atrium into the right ventricle." },
+      { id: "aorticValve", name: "Aortic Valve", function: "Controls blood leaving the left ventricle into the aorta." },
+      { id: "pulmonaryValve", name: "Pulmonary Valve", function: "Controls blood leaving the right ventricle toward the lungs." },
+      { id: "aorta", name: "Aorta", function: "The body's largest artery, carrying oxygen-rich blood away from the heart." },
+      { id: "pulmonaryVessels", name: "Pulmonary Vessels", function: "Carry blood between the heart and lungs to pick up oxygen." },
+      { id: "venaCava", name: "Vena Cava", function: "The body's largest veins, returning oxygen-poor blood to the heart." },
+      { id: "coronaryArteries", name: "Coronary Arteries", function: "Supply the heart muscle itself with oxygen-rich blood." },
     ],
     // Order used to animate the blood flow particle path
     bloodFlowPath: [
@@ -107,163 +113,158 @@ export const SYSTEMS = {
       "aorta",
     ],
   },
-
   lungs: {
     id: "lungs",
-    label: "පෙනහළු",
+    label: "LUNGS",
     icon: "🫁",
-    summary: "ශ්වසන පද්ධතිය ඔක්සිජන් සහ කාබන් ඩයොක්සයිඩ් හුවමාරු කරයි",
-    name: "පෙනහළු සහ ශ්වසන පද්ධතිය",
-    function: "වාතය සහ රුධිරය අතර ඔක්සිජන් සහ කාබන් ඩයොක්සයිඩ් හුවමාරු කරයි.",
-    structures: ["ශ්වාසනාලය", "ශ්වාස නාලිකා", "දකුණු පෙනහැල්ල", "වම් පෙනහැල්ල", "වක්‍ර පටලය"],
-    fact: "මෙම ආකෘතිය සැබෑ මිනිස් ශ්වසන පද්ධතියකින් නිර්මාණය කර ඇත, එහි ශ්වාස නාලිකා ගස එක් එක් පෙනහැල්ල තුළ තෘතීයික (කොටස්) ශ්වාස නාලිකා දක්වාම ආකෘතිගත කර ඇත.",
+    summary: "The respiratory system exchanges oxygen and carbon dioxide",
+    name: "Lungs & Respiratory System",
+    function: "Exchanges oxygen and carbon dioxide between air and blood.",
+    structures: ["Trachea", "Bronchi", "Right lung", "Left lung", "Diaphragm"],
+    fact: "This model is built from a real human respiratory system, with the bronchial tree modeled all the way down to the tertiary (segmental) bronchi inside each lung.",
     simple:
-      "වාතය ශ්වාසනාලය හරහා පහළට ගොස් ස්පොන්ජියක් වැනි පෙනහළු දෙකකට ඇතුළු වේ; එහිදී ඔක්සිජන් රුධිරයට ඇතුළු වන අතර කාබන් ඩයොක්සයිඩ් ඉවත් වේ. මෙහි දැකිය හැකි සෑම ව්‍යුහයක්ම (වක්‍ර පටලය හැර) සැබෑ, තනි තනිව ආකෘතිගත කළ ව්‍යුහ විද්‍යාවකි.",
+      "Air travels down the windpipe into two spongy lungs, where oxygen passes into the blood and carbon dioxide passes out. Every structure visible here (aside from the diaphragm) is real, individually modeled anatomy.",
     // Categories from the real lungs.glb (87 meshes) -- see
     // src/anatomy/lungClassifier.js. The diaphragm is a small procedural
     // addition (see README/ATTRIBUTION) since it isn't part of this
     // respiratory-system dataset.
     parts: [
-      { id: "trachea", name: "ශ්වාසනාලය", function: "ගෙලෙහි සිට පෙනහළු දෙසට වාතය ගෙන යන ශ්වාස නාලයයි." },
-      { id: "bronchi", name: "ශ්වාස නාලිකා", function: "අතු බෙදෙන වාතය ගමන් කරන ගස වන අතර, පෙනහැල්ලේ එක් එක් පෙත්ත තුළ ඇති කුඩා නාල දක්වා විහිදේ." },
-      { id: "rightLung", name: "දකුණු පෙනහැල්ල", function: "තරමක් විශාල පෙනහැල්ල වන අතර පෙත්ත තුනකට බෙදා ඇත." },
-      { id: "leftLung", name: "වම් පෙනහැල්ල", function: "හෘදයට ඉඩ සැලසීම සඳහා පෙත්ත දෙකකට බෙදා ඇති තරමක් කුඩා පෙනහැල්ල." },
-      { id: "diaphragm", name: "වක්‍ර පටලය", function: "පෙනහළු යටින් පිහිටි, හුස්ම ගැනීම මෙහෙයවන ගෝලාකාර පේශිය." },
+      { id: "trachea", name: "Trachea", function: "The windpipe — carries air from the throat toward the lungs." },
+      { id: "bronchi", name: "Bronchi", function: "The branching airway tree, down to small tubes inside each lobe of the lungs." },
+      { id: "rightLung", name: "Right Lung", function: "Slightly larger lung, divided into three lobes." },
+      { id: "leftLung", name: "Left Lung", function: "Slightly smaller lung, divided into two lobes to make room for the heart." },
+      { id: "diaphragm", name: "Diaphragm", function: "The dome-shaped muscle beneath the lungs that drives breathing." },
     ],
   },
-
   skeleton: {
     id: "skeleton",
-    label: "අස්ථි පද්ධතිය",
+    label: "SKELETON",
     icon: "🦴",
-    summary: "සිරුරට ආධාරක වන සහ ආරක්ෂා කරන රාමුව",
-    name: "අස්ථි පද්ධතිය",
-    function: "සිරුරට ආධාරක වන අතර, අවයව ආරක්ෂා කර, චලනයට හැකියාව ලබා දෙයි.",
+    summary: "The framework that supports and protects the body",
+    name: "Skeletal System",
+    function: "Supports the body, protects organs, and enables movement.",
     structures: [
-      "හිස් කබල",
-      "කශේරුකා",
-      "පර්ශුකා",
-      "ශ්‍රෝණිය",
-      "අක්ෂකය සහ අංස පත්‍රය",
-      "අත් අස්ථි",
-      "පාද අස්ථි",
-      "අත් සහ පාද",
+      "Skull",
+      "Spine",
+      "Ribs",
+      "Pelvis",
+      "Clavicle & Scapula",
+      "Arm bones",
+      "Leg bones",
+      "Hands & Feet",
     ],
-    fact: "මෙම ආකෘතියේ සැබෑ, තනි තනිව ආකෘතිගත කළ අස්ථි 202ක් දැක්වේ — වෛද්‍ය සමුද්දේශ ව්‍යුහ විද්‍යාවේ භාවිතා වන ප්‍රධාන නම් කළ අස්ථි ගණනට සමානය.",
+    fact: "This model shows 202 real, individually modeled bones — the same number of major named bones used in medical reference anatomy.",
     simple:
-      "අස්ථි පද්ධතිය යනු අස්ථි, සන්ධි සහ සම්බන්ධක පටකවලින් සැදුම්ලත් ජීවමාන රාමුවක් වන අතර එය ඔබේ සිරුරට හැඩය ලබා දී චලනය කිරීමට ඉඩ සලසයි. මෙහි දැකිය හැකි සෑම අස්ථියක්ම සැබෑ, තනි තනිව නම් කළ ව්‍යුහ විද්‍යාත්මක ව්‍යුහයකි — ඒවායින් ඕනෑම එකකට යොමු කර එය කරන කාර්යය දැනගන්න.",
+      "The skeleton is a living framework of bones, joints and connective tissue that gives your body shape and lets you move. Every bone visible here is a real, individually named anatomical structure — point at any one of them to learn what it does.",
     // 17 categories that the real skeleton.glb's 202 individually-named
     // bones are grouped into for public-friendly selection (see
     // src/anatomy/boneClassifier.js). Multiple real bones share each id
     // (e.g. all 24 ribs -> "ribs"), but every one is a distinct, real mesh.
     parts: [
-      { id: "skull", name: "හිස් කබල", function: "මොළය ආරක්ෂා කර මුහුණට හැඩය ලබා දෙයි. ඒකාබද්ධ වූ තනි අස්ථි 20කට වැඩි ගණනකින් සමන්විතය." },
-      { id: "hyoid", name: "හයිඑයිඩ් අස්ථිය", function: "ගෙලෙහි පිහිටි කුඩා, නිදහසේ පාවෙන අස්ථියක් වන අතර ගිලීමට සහ කථනයට භාවිතා වන පේශි ස්ථානගත කරයි." },
-      { id: "sternum", name: "උරස් අස්ථිය", function: "පර්ශුකා සම්බන්ධ වන පැතලි මධ්‍යම අස්ථිය වන අතර හෘදය ආරක්ෂා කරයි." },
-      { id: "ribs", name: "පර්ශුකා", function: "හෘදය සහ පෙනහළු වටා ආරක්ෂිත කූඩුවක් සාදන යුගල දොළහකි." },
-      { id: "spine", name: "කශේරුකා", function: "සුෂුම්නාව ආරක්ෂා කර ඉරියව්වට ආධාරක වන තනි කශේරුකා 24ක ගොඩගැස්මකි." },
-      { id: "pelvis", name: "ශ්‍රෝණිය", function: "සිරුරේ බර දරන අතර උදර සහ ප්‍රජනන අවයව ආරක්ෂා කරයි." },
-      { id: "clavicle", name: "අක්ෂකය", function: "අක්ෂක අස්ථිය — අත ශරීරයේ මධ්‍ය කඳට සම්බන්ධ කරයි." },
-      { id: "scapula", name: "අංස පත්‍රය", function: "උරහිස් අස්ථිය — අතේ පේශි ස්ථානගත කරයි." },
-      { id: "humerus", name: "බාහු අස්ථිය", function: "උරහිසේ සිට වැලමිට දක්වා වන ඉහළ බාහුවේ අස්ථිය." },
-      { id: "radius", name: "රේඩියස් අස්ථිය", function: "මැණික්කටුව පැත්තේ පිහිටි යටි බාහුවේ අස්ථි දෙකෙන් එකකි." },
-      { id: "ulna", name: "අල්නා අස්ථිය", function: "වැලමිටේ තුඩ සාදන අනෙක් යටි බාහු අස්ථිය." },
-      { id: "femur", name: "තොලැටිය", function: "කලවයේ අස්ථිය — සිරුරේ දිගම සහ ශක්තිමත්ම අස්ථිය." },
-      { id: "patella", name: "දණහිස් තැටිය", function: "දණහිසේ ඉදිරිපස ටෙන්ඩනය තුළ ඇතුළත් වූ කුඩා අස්ථියක් වන අතර සන්ධිය ආරක්ෂා කරයි." },
-      { id: "tibia", name: "ටිබියා අස්ථිය", function: "කෙණ්ඩයේ අස්ථිය — පාදයේ බරෙන් වැඩි කොටසක් දරයි." },
-      { id: "fibula", name: "ෆිබියුලා අස්ථිය", function: "සිහින් පහළ කෙණ්ඩා අස්ථිය වන අතර වළලුකර ස්ථාවරත්වයට උපකාරී වේ." },
-      { id: "hands", name: "අත් අස්ථි", function: "එක් අතකට කුඩා අස්ථි 27ක් — කාපල්, මෙටාකාපල් සහ ඇඟිලි ෆැලැන්ජ් — අතට සියුම් නිපුණත්වය ලබා දෙයි." },
-      { id: "feet", name: "පාද අස්ථි", function: "එක් පාදයකට කුඩා අස්ථි 26ක් — ටාර්සල්, මෙටාටාර්සල් සහ පාදැඟිලි ෆැලැන්ජ් — බර දරා සමතුලිතතාව රැක දෙයි." },
+      { id: "skull", name: "Skull", function: "Protects the brain and shapes the face. Made of more than 20 individual fused bones." },
+      { id: "hyoid", name: "Hyoid Bone", function: "A small, free-floating bone in the neck that anchors muscles used for swallowing and speech." },
+      { id: "sternum", name: "Sternum (Breastbone)", function: "The flat central bone that the ribs attach to, protecting the heart." },
+      { id: "ribs", name: "Ribs", function: "Twelve pairs that form a protective cage around the heart and lungs." },
+      { id: "spine", name: "Spine (Vertebrae)", function: "A stack of 24 individual vertebrae that protect the spinal cord and support posture." },
+      { id: "pelvis", name: "Pelvis (Hip Bone)", function: "Supports body weight and protects abdominal and reproductive organs." },
+      { id: "clavicle", name: "Clavicle", function: "The collarbone — connects the arm to the torso." },
+      { id: "scapula", name: "Scapula", function: "The shoulder blade — anchors arm muscles." },
+      { id: "humerus", name: "Humerus", function: "The upper-arm bone, from shoulder to elbow." },
+      { id: "radius", name: "Radius", function: "One of two forearm bones, on the thumb side." },
+      { id: "ulna", name: "Ulna", function: "The other forearm bone, forming the point of the elbow." },
+      { id: "femur", name: "Femur", function: "The thigh bone — the longest, strongest bone in the body." },
+      { id: "patella", name: "Patella (Kneecap)", function: "A small bone embedded in the tendon at the front of the knee, protecting the joint." },
+      { id: "tibia", name: "Tibia", function: "The shin bone — bears most of the leg's weight." },
+      { id: "fibula", name: "Fibula", function: "The thinner lower-leg bone, aids ankle stability." },
+      { id: "hands", name: "Hand Bones", function: "27 small bones per hand — carpals, metacarpals and finger phalanges — giving the hand fine dexterity." },
+      { id: "feet", name: "Foot Bones", function: "26 small bones per foot — tarsals, metatarsals and toe phalanges — supporting weight and balance." },
     ],
   },
-
   muscles: {
     id: "muscles",
-    label: "පේශි පද්ධතිය",
+    label: "MUSCLES",
     icon: "💪",
-    summary: "සෑම චලනයකටම බලය සපයන පටකය",
-    name: "පේශි පද්ධතිය",
-    function: "චලනය ඇති කරයි, ඉරියව්ව පවත්වා ගනී සහ සිරුරේ තාපය ජනනය කරයි.",
+    summary: "The tissue that powers every movement",
+    name: "Muscular System",
+    function: "Produces movement, maintains posture and generates body heat.",
     structures: [
-      "හිස සහ බෙල්ල",
-      "උරහිස්",
-      "පපුව සහ පිට",
-      "අත්",
-      "උදරය සහ මධ්‍ය කඳ",
-      "උකුල් සහ කකුල්",
+      "Head & Neck",
+      "Shoulders",
+      "Chest & Back",
+      "Arms",
+      "Abdomen & Trunk",
+      "Hips & Legs",
     ],
-    fact: "මෙම ආකෘතියේ සැබෑ, තනි තනිව ආකෘතිගත කළ පේශි සහ ටෙන්ඩන 467ක් දැක්වේ — සම්පූර්ණ සිරුරේ 600කට වැඩි ප්‍රමාණයක් පවතින අතර, එය සිරුරේ බරෙන් ආසන්න වශයෙන් 40%ක් වේ.",
+    fact: "This model shows 467 real, individually modeled muscles and tendons — more than 600 exist in the full body, making up roughly 40% of body weight.",
     simple:
-      "පේශි යුගල වශයෙන් ක්‍රියා කරයි — එකක් හැකිලෙන අතර අනෙකක් ලිහිල් වේ — එමගින් ඔබේ අස්ථි සහ සන්ධි චලනය කරයි. මෙහි දැකිය හැකි සෑම පේශියක්ම සැබෑ, තනි තනිව නම් කළ ව්‍යුහ විද්‍යාත්මක ව්‍යුහයකි.",
+      "Muscles work in pairs — one contracts while the other relaxes — to move your bones and joints. Every muscle visible here is a real, individually named anatomical structure.",
     // 13 broad groups that the real muscles.glb's 467 individually-named
     // muscles/tendons are classified into (see
     // src/anatomy/muscleClassifier.js), matching the public "keep it
     // simple" tone rather than clinical origin/insertion detail.
     parts: [
-      { id: "headNeck", name: "හිස සහ බෙල්ලේ පේශි", function: "මුහුණේ ඉරියව්, හපන, ගිලීම සහ හිස හැරවීම පාලනය කරයි." },
-      { id: "shoulders", name: "උරහිස් පේශි", function: "ශරීරයේ වඩාත්ම චලනය වන සන්ධිවලින් එකක් වන උරහිස් සන්ධිය කරකවා ස්ථාවර කරයි." },
-      { id: "chest", name: "පපු පේශි", function: "අත සිරුර හරහා ගෙන ගොස් හුස්ම ගැනීමට උපකාරී වේ." },
-      { id: "back", name: "පිටු පේශි", function: "කශේරුකාවට ආධාරක වන අතර ඉරියව්ව සහ ඇදලන චලන පාලනය කරයි." },
-      { id: "upperArm", name: "ඉහළ බාහු පේශි", function: "වැලමිට නමන සහ දිගු කරයි (බයිසෙප්ස් සහ ට්‍රයිසෙප්ස්)." },
-      { id: "forearm", name: "යටි බාහු පේශි", function: "මණිකයේ චලනය සහ ග්‍රහණ ශක්තිය පාලනය කරයි." },
-      { id: "hand", name: "අත් පේශි", function: "ඇඟිලිවලට සියුම්, නිවැරදි පාලනයක් ලබා දෙන කුඩා අභ්‍යන්තර පේශි." },
-      { id: "abdomen", name: "උදර පේශි", function: "මධ්‍ය කඳට ආධාරක වන අතර අභ්‍යන්තර අවයව ආරක්ෂා කර කරකැවීමට උපකාරී වේ." },
-      { id: "trunk", name: "මධ්‍ය කඳ පේශි", function: "වක්‍ර පටලය සහ පර්ශුකා අතර පේශි ඇතුළත් වන අතර — හුස්ම ගැනීම මෙහෙයවන ප්‍රධාන පේශි මේවාය." },
-      { id: "hip", name: "උකුල් සහ ග්ලූටියල් පේශි", function: "උකුල් චලනයට බලය සපයන අතර ඇවිදින සහ දුවන විට ශ්‍රෝණිය ස්ථාවර කරයි." },
-      { id: "upperLeg", name: "ඉහළ කකුල් පේශි", function: "දණහිස දිගු කර නමයි (ක්වාඩ්‍රිසෙප්ස් සහ හැම්ස්ට්‍රිංග්ස්)." },
-      { id: "lowerLeg", name: "පහළ කකුල් පේශි", function: "පාදය යොමු කර නමයි; ඇවිදීම, දිවීම සහ පැනීමට බලය සපයයි (වැසිකිලි පේශි)." },
-      { id: "foot", name: "පාද පේශි", function: "සමතුලිතතාව සහ පාදයේ වක්‍රයට ආධාරක වන කුඩා අභ්‍යන්තර පේශි." },
+      { id: "headNeck", name: "Head & Neck Muscles", function: "Control facial expression, chewing, swallowing and turning the head." },
+      { id: "shoulders", name: "Shoulder Muscles", function: "Rotate and stabilize the shoulder joint, one of the body's most mobile joints." },
+      { id: "chest", name: "Chest Muscles", function: "Move the arm across the body and assist breathing." },
+      { id: "back", name: "Back Muscles", function: "Support the spine and control posture and pulling movements." },
+      { id: "upperArm", name: "Upper Arm Muscles", function: "Bend and straighten the elbow (biceps and triceps)." },
+      { id: "forearm", name: "Forearm Muscles", function: "Control wrist movement and grip strength." },
+      { id: "hand", name: "Hand Muscles", function: "Small intrinsic muscles giving the fingers fine, precise control." },
+      { id: "abdomen", name: "Abdominal Muscles", function: "Support the core, protect internal organs and assist twisting." },
+      { id: "trunk", name: "Trunk Muscles", function: "Includes the diaphragm and intercostals — the main muscles that drive breathing." },
+      { id: "hip", name: "Hip & Glute Muscles", function: "Power hip movement and stabilize the pelvis while walking and running." },
+      { id: "upperLeg", name: "Upper Leg Muscles", function: "Straighten and bend the knee (quadriceps and hamstrings)." },
+      { id: "lowerLeg", name: "Lower Leg Muscles", function: "Point and flex the foot; power walking, running and jumping (calf muscles)." },
+      { id: "foot", name: "Foot Muscles", function: "Small intrinsic muscles supporting balance and the arch of the foot." },
     ],
   },
-
   digestive: {
     id: "digestive",
-    label: "ජීර්ණ පද්ධතිය",
+    label: "DIGESTIVE SYSTEM",
     icon: "🍽",
-    summary: "ආහාර ශක්තිය සහ පෝෂක බවට බිඳ දමයි",
-    name: "ජීර්ණ පද්ධතිය",
-    function: "ආහාර බිඳ දමා සිරුරට භාවිතා කළ හැකි පෝෂක අවශෝෂණය කරයි.",
-    structures: ["ආමාශය", "ග්‍රහණිය", "කුඩා බඩවැල", "මහා බඩවැල", "අක්මාව", "පිතාශය", "අග්නාශය", "පිත නාල"],
-    fact: "මෙම ආකෘතිය වෙන වෙනම ආකෘතිගත කළ සැබෑ අවයව හයක් ඒකාබද්ධ කරයි — අක්මාව, අග්නාශය, පිතාශය, කුඩා බඩවැල, මහා බඩවැල සහ පිත නාල ජාලය — සියල්ල එකිනෙකට සාපේක්ෂව නිවැරදිව ස්ථානගත කර ඇති අතර, අසල්වැසි අවයවවලින් අක්මාවේ ඇති වන සලකුණු වැනි සැබෑ ව්‍යුහ විද්‍යාත්මක සලකුණු දක්වාම.",
+    summary: "Breaks down food into energy and nutrients",
+    name: "Digestive System",
+    function: "Breaks down food and absorbs nutrients for the body to use.",
+    structures: ["Stomach", "Duodenum", "Small intestine", "Large intestine", "Liver", "Gallbladder", "Pancreas", "Bile ducts"],
+    fact: "This model combines six separately-modeled real organs — liver, pancreas, gallbladder, small intestine, large intestine and the bile duct network — all correctly positioned relative to each other, right down to real anatomical landmarks like the liver's impressions from neighboring organs.",
     simple:
-      "ආහාර ඔබේ රුධිරයට සෑම සෛලයකටම ගෙන යා හැකි පෝෂක බවට බිඳ දමන දිගු නාලයක් හරහා ගමන් කරයි; එම අතරතුර අක්මාව, පිතාශය සහ අග්නාශය ජීර්ණ යුෂ එකතු කරයි.",
+      "Food travels through a long tube that breaks it into nutrients your blood can carry to every cell, with the liver, gallbladder and pancreas adding digestive juices along the way.",
     // Categories from SIX real, separately-sourced GLB files loaded
     // together -- see src/anatomy/digestiveClassifier.js. The stomach is
     // a small procedural addition (this dataset doesn't include a
     // stomach or esophagus model) -- see README/ATTRIBUTION.
     parts: [
-      { id: "stomach", name: "ආමාශය", function: "ආහාර තවදුරටත් බිඳ දැමීමට අම්ලය සහ පේශි භාවිතා කරයි." },
-      { id: "duodenum", name: "ග්‍රහණිය", function: "කුඩා බඩවැලේ පළමු, කෙටි කොටස වන අතර, පිත සහ අග්නාශ යුෂ ආහාර සමඟ එකතු වන ස්ථානයයි." },
-      { id: "smallIntestine", name: "කුඩා බඩවැල", function: "ජෙජුනම් සහ ඉලියම් — බොහෝ පෝෂක රුධිර ප්‍රවාහයට අවශෝෂණය කරයි." },
-      { id: "largeIntestine", name: "මහා බඩවැල", function: "ජලය අවශෝෂණය කර ඝන අපද්‍රව්‍ය සාදයි, උපාංගය සහ ගුද මාර්ගය ඇතුළුව." },
-      { id: "liver", name: "අක්මාව", function: "රුධිරය පෙරා මේදය ජීර්ණය කිරීමට පිත නිපදවයි." },
-      { id: "gallbladder", name: "පිතාශය", function: "අක්මාවෙන් නිපදවන පිත ගබඩා කර සාන්ද්‍රණය කරයි." },
-      { id: "pancreas", name: "අග්නාශය", function: "ජීර්ණය සහ රුධිර සීනි නියාමනය කිරීමට එන්සයිම සහ ඉන්සුලින් නිපදවයි." },
-      { id: "bileDucts", name: "පිත නාල ජාලය", function: "අක්මාවෙන් සහ පිතාශයෙන් පිත ද, අග්නාශයෙන් ජීර්ණ එන්සයිම ද ග්‍රහණියට ගෙන යයි." },
+      { id: "stomach", name: "Stomach", function: "Uses acid and muscle to break food down further." },
+      { id: "duodenum", name: "Duodenum", function: "The first, short section of the small intestine, where bile and pancreatic juice join the food." },
+      { id: "smallIntestine", name: "Small Intestine", function: "The jejunum and ileum — absorb most nutrients into the bloodstream." },
+      { id: "largeIntestine", name: "Large Intestine", function: "Absorbs water and forms solid waste, including the appendix and rectum." },
+      { id: "liver", name: "Liver", function: "Filters blood and produces bile to digest fat." },
+      { id: "gallbladder", name: "Gallbladder", function: "Stores and concentrates bile produced by the liver." },
+      { id: "pancreas", name: "Pancreas", function: "Produces enzymes and insulin to regulate digestion and blood sugar." },
+      { id: "bileDucts", name: "Bile Duct Network", function: "Carries bile from the liver and gallbladder, and digestive enzymes from the pancreas, into the duodenum." },
     ],
   },
-
   nervous: {
     id: "nervous",
-    label: "ස්නායු පද්ධතිය",
+    label: "NERVOUS SYSTEM",
     icon: "⚡",
-    summary: "සිරුරේ විද්‍යුත් සන්නිවේදන ජාලය",
-    name: "ස්නායු පද්ධතිය",
-    function: "මොළය, සුෂුම්නාව සහ සිරුර අතර විද්‍යුත් සංඥා ගෙන යයි.",
-    structures: ["මොළය", "ග්‍රීවා සුෂුම්නාව", "වක්ෂස්ථ සුෂුම්නාව", "කටි සුෂුම්නාව", "ත්‍රික සුෂුම්නාව"],
-    fact: "මෙම ආකෘතිය මොළ ගවේෂකයේ භාවිතා වන එම සැබෑ Allen Institute සිතියම්ගත මොළයම, සැබෑ, තනි තනිව කොටස් කළ මිනිස් සුෂුම්නාවක් සමඟ ඒකාබද්ධ කරයි — බෙල්ලේ සිට අලාභුව දක්වා කොටස් 31ම.",
+    summary: "The body's electrical communication network",
+    name: "Nervous System",
+    function: "Carries electrical signals between the brain, spinal cord and body.",
+    structures: ["Brain", "Cervical spinal cord", "Thoracic spinal cord", "Lumbar spinal cord", "Sacral spinal cord"],
+    fact: "This model combines the same real Allen Institute–mapped brain used in the Brain explorer with a real, individually-segmented human spinal cord — all 31 segments, from the neck down to the tailbone.",
     simple:
-      "න්‍යුරෝන එකිනෙකට කුඩා විද්‍යුත් සංඥා යවන අතර, එමගින් ඔබේ මොළයට ලෝකය දැනගෙන ඔබේ පේශි ක්ෂණිකව පාලනය කිරීමට හැකියාව ලැබේ. මොළය සහ සුෂුම්නාව එක්ව සිරුරේ මධ්‍යම අණදෙන මාර්ගය සාදයි.",
+      "Neurons pass tiny electrical signals to each other, letting your brain sense the world and control your muscles almost instantly. The brain and spinal cord together form the body's central command line.",
     // Brain (reused from brain.glb) + real spinal_cord.glb (30 segments,
     // grouped into 4 spinal regions) -- see
     // src/anatomy/spinalCordClassifier.js. Peripheral nerves are not
     // part of this dataset -- see README/ATTRIBUTION.
     parts: [
-      { id: "brainCore", name: "මොළය", function: "බොහෝ ස්නායු සංඥා සකස් කර ආරම්භ කරයි." },
-      { id: "cervicalSpine", name: "ග්‍රීවා සුෂුම්නාව", function: "ඉහළම කොටස වන අතර බෙල්ලේ පිහිටයි — අත් සහ හිස වෙතට සහ එතැනින් සංඥා ගෙන යයි." },
-      { id: "thoracicSpine", name: "වක්ෂස්ථ සුෂුම්නාව", function: "මධ්‍ය පිටු කොටස — පපුව සහ උදරය වෙතට සහ එතැනින් සංඥා ගෙන යයි." },
-      { id: "lumbarSpine", name: "කටි සුෂුම්නාව", function: "පහළ පිටු කොටස — කකුල් වෙතට සහ එතැනින් සංඥා ගෙන යයි." },
-      { id: "sacralSpine", name: "ත්‍රික සුෂුම්නාව", function: "පහළම කොටස — මුත්‍රාශය, බඩවැල සහ කකුල්වල කොටස් පාලනය කරයි." },
+      { id: "brainCore", name: "Brain", function: "Processes and originates most nerve signals." },
+      { id: "cervicalSpine", name: "Cervical Spinal Cord", function: "The topmost section, in the neck — carries signals to and from the arms and head." },
+      { id: "thoracicSpine", name: "Thoracic Spinal Cord", function: "The mid-back section — carries signals to and from the chest and abdomen." },
+      { id: "lumbarSpine", name: "Lumbar Spinal Cord", function: "The lower-back section — carries signals to and from the legs." },
+      { id: "sacralSpine", name: "Sacral Spinal Cord", function: "The lowest section — controls the bladder, bowel and parts of the legs." },
     ],
   },
 };
@@ -278,6 +279,51 @@ export const SYSTEM_ORDER = [
   "nervous",
 ];
 
-export function getSystem(id) {
-  return SYSTEMS[id] || null;
+/**
+ * Returns a system's content in the requested language.
+ *
+ * The English base is authoritative for structure (`id`, `icon`,
+ * `bloodFlowPath`, and the order/set of `parts`); the Sinhala overlay only
+ * supplies translated text, matched by the same stable ids. Anything the
+ * overlay doesn't cover silently falls back to English, so a missing
+ * translation shows English text rather than an empty panel.
+ *
+ * @param {string} id   system id, e.g. "brain"
+ * @param {"en"|"si"} [lang] language to render in (English by default)
+ * @returns {object|null} merged system, or null for an unknown id
+ */
+export function getSystem(id, lang = "en") {
+  const base = SYSTEMS[id];
+  if (!base) return null;
+  if (lang !== "si") return base;
+
+  const overlay = SI_SYSTEMS[id];
+  if (!overlay) return base;
+
+  return {
+    ...base,
+    ...overlay,
+    // `id`, `icon` and `bloodFlowPath` are language-independent and come
+    // from the base; overlaying `parts` must keep the base's ordering and
+    // every part id the classifiers emit.
+    parts: base.parts.map((part) => ({
+      ...part,
+      ...(overlay.parts?.[part.id] || {}),
+    })),
+  };
+}
+
+/** All systems, in menu order, in one language -- for re-rendering lists. */
+export function getAllSystems(lang = "en") {
+  return SYSTEM_ORDER.map((id) => getSystem(id, lang));
+}
+
+/** The educational disclaimer in the given language. */
+export function getDisclaimer(lang = "en") {
+  return lang === "si" ? SI_DISCLAIMER : DISCLAIMER;
+}
+
+/** True when a Sinhala translation exists for this system. */
+export function hasSinhala(id) {
+  return Boolean(SI_SYSTEMS[id]);
 }

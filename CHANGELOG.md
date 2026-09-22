@@ -1,5 +1,45 @@
 # Changelog — Exhibition Quality Upgrade Pass
 
+## Bilingual pass (English / සිංහල) — step 1: language switcher + main page
+
+Visitors can now choose the exhibit's language on the main page, and the
+whole interface follows that choice.
+
+- **New `src/data/i18n.js`** — single source of language state:
+  `getLang()`, `setLang()`, `onLanguageChange()` and `t(key)`. The choice is
+  kept in `localStorage` (`anatomyExplorer.language`), so the kiosk reopens
+  in the last language used; on a first visit it falls back to the browser /
+  OS locale, then English.
+- **New `src/data/uiStrings.js`** — all interface chrome (menus, panel
+  headings, HUD text, toggles, model-status lines) in both languages. A key
+  missing from a translation falls back to English rather than rendering an
+  empty label.
+- **New `src/data/anatomyData.si.js`** — the Sinhala anatomical content as a
+  separate overlay keyed by the same system + part ids. `anatomyData.js`
+  keeps English as the source language; `getSystem(id, lang)` merges the two,
+  so the stable `id` values the classifiers depend on never change with the
+  language (verified: 7 systems, 69 parts, identical ids and ordering).
+- **New `src/components/LanguageSwitcher.js`** — the 🌐 English / සිංහල
+  buttons, shown on both main pages (Welcome screen and Main menu). They
+  carry `[data-selectable]`, so they work by point + pinch like every other
+  control.
+- Components now re-render themselves on `onLanguageChange()`:
+  `MainMenu` (labels + summaries), `WelcomeScreen`, `InformationPanel`
+  (including a part already on screen, and the disclaimer), `GestureIndicator`
+  (hints + tracking status), `IdleMode`, and the title bar / Back button /
+  pause toast / tracking banner in `main.js`.
+- The 7 explorers resolve their content with `getSystem(id, getLang())` and
+  localize their control strips (Blood Flow, Breathing Mode, Brain Activity,
+  model-status lines). Toggle state is preserved across a language switch.
+- Sinhala fonts (`Iskoola Pota`, `Nirmala UI`, `Noto Sans Sinhala`) appended
+  to the font stacks so the script renders correctly on Windows, macOS and
+  Linux; `lang-switcher` styles added to `styles.css`.
+
+Verified: syntax-checked all 46 modules, asserted EN/SI structural parity and
+that no user-facing string is left untranslated, and drove the real modules in
+a headless browser (menu → explorer panel → part selection, switching back and
+forth) with zero runtime errors.
+
 ## LM-010 connection and pointing accuracy fixes
 
 - The mouse fallback no longer overwrites the active `leapmotion` backend
