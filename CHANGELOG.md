@@ -40,6 +40,46 @@ that no user-facing string is left untranslated, and drove the real modules in
 a headless browser (menu → explorer panel → part selection, switching back and
 forth) with zero runtime errors.
 
+## Layout and gesture-HUD fixes (bilingual pass, step 1 follow-up)
+
+Two problems reported after the first bilingual build:
+
+- **On laptop-sized screens the language row landed on top of the exhibit
+  title, and the Welcome screen could be clipped.** Measured at 1366x768
+  before the fix: the switcher occupied y=1..105, straight over the fixed
+  title bar (y=28) and the tracking banner (y=90..141) — and the Sinhala
+  Welcome screen ran off **both** the top (inner top = -103) and the bottom
+  of the screen, because the Sinhala gesture labels wrapped to two lines and
+  made the legend twice as tall as the English one. Fixed in `styles.css`
+  and `LanguageSwitcher.js`:
+  - the picker is now a single ~41px row (label + both buttons) instead of a
+    stacked block, and the "you can change this at any time" line (and its
+    `languageNote` string) is gone;
+  - `.main-menu` / `.welcome-screen` reserve room for the title bar *and* the
+    tracking banner, and centre their content with auto margins on the
+    first/last child instead of `justify-content: center` — a centred flex
+    child that outgrows a scroll container has its top half clipped and
+    unreachable, which is exactly what pushed the language row over the
+    title;
+  - the gesture legend is a fixed 5-column grid, so English and Sinhala get
+    identical column widths and the row can no longer reflow into a
+    different shape per language;
+  - added `max-height: 820px`, `max-height: 640px` and `max-width: 820px`
+    breakpoints that tighten spacing on short/narrow panels.
+  Verified at 1920x1080, 1600x900, 1366x768, 1280x720 and 1024x768: no
+  clipping, no title-bar collision, no tracking-banner collision, in both
+  languages.
+
+- **The gesture HUD must read the same in both languages.** The hint and
+  tracking-status lines moved out of the per-language tables into a single
+  `SHARED_STRINGS` table in `uiStrings.js` (`t()` in `i18n.js` now resolves
+  active language -> shared -> English -> key). One copy of each string, so
+  the two languages cannot drift apart: "Mouse control (hand tracking
+  unavailable)", "↔ Pinch & drag to rotate · ☝ Point & hold to inspect ·
+  ✋ Open palm to pause", "☝ Point & pinch (or hold still) to select ·
+  ✋ Open palm to pause", "👋 Wave to begin", "👋 Wave your hand to explore",
+  plus the remaining tracking statuses.
+
 ## LM-010 connection and pointing accuracy fixes
 
 - The mouse fallback no longer overwrites the active `leapmotion` backend

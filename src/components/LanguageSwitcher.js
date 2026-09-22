@@ -7,6 +7,12 @@
  * themselves when onLanguageChange() fires, so all that's needed here is
  * the markup plus one click binding.
  *
+ * Layout note: this renders as ONE tidy row (label + two buttons) rather
+ * than a stacked block, so it stays a compact ~40px strip that can't push
+ * the main menu into the fixed title bar or off the bottom of a short
+ * screen. `variant: "compact"` only shrinks the type slightly -- the
+ * structure is identical everywhere.
+ *
  * The buttons carry [data-selectable] so the virtual cursor can highlight
  * and activate them by pointing + pinching, exactly like a menu button --
  * VirtualCursor activates targets through a native .click(), so a normal
@@ -16,11 +22,11 @@
 import { LANGUAGES, LANGUAGE_ORDER, getLang, setLang, t } from "../data/i18n.js";
 
 /**
- * @param {{variant?: "default"|"compact", showNote?: boolean}} [options]
- *   variant  - "compact" is the tighter version used on the Welcome screen
- *   showNote - set false to hide the "you can change this" helper line
+ * @param {{variant?: "default"|"compact"}} [options]
+ *   variant - "compact" is the slightly smaller version used on the
+ *             Welcome screen, where the typography around it is larger.
  */
-export function languageSwitcherHtml({ variant = "default", showNote = true } = {}) {
+export function languageSwitcherHtml({ variant = "default" } = {}) {
   const active = getLang();
   return `
     <div class="lang-switcher lang-switcher--${variant}" data-lang-switcher>
@@ -32,12 +38,12 @@ export function languageSwitcherHtml({ variant = "default", showNote = true } = 
                   class="lang-btn${id === active ? " lang-btn--active" : ""}"
                   data-selectable
                   data-lang="${id}"
-                  aria-pressed="${id === active}">
+                  aria-pressed="${id === active}"
+                  title="${LANGUAGES[id].nativeLabel}">
             ${LANGUAGES[id].nativeLabel}
           </button>`
         ).join("")}
       </div>
-      ${showNote ? `<span class="lang-switcher__note">${t("languageNote")}</span>` : ""}
     </div>
   `;
 }

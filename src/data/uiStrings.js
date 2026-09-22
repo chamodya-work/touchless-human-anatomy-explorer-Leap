@@ -12,13 +12,16 @@
  *     is plain text and is injected with textContent / escaped templates.
  *   - English is the fallback for any key missing from another language
  *     (see t() in i18n.js), so a gap can never render as "undefined".
+ *   - A handful of strings are intentionally NOT translated and live in
+ *     SHARED_STRINGS at the bottom of this file instead: the gesture-HUD
+ *     hints and tracking statuses, which read identically in both
+ *     languages.
  * -----------------------------------------------------------------------
  */
 export const UI_STRINGS = {
   en: {
     appTitle: "TOUCHLESS HUMAN ANATOMY EXPLORER",
     chooseLanguage: "Choose language",
-    languageNote: "You can change this at any time",
 
     welcomeKicker: "UNIVERSITY MEDICAL EXHIBITION",
     welcomeTitleHtml: "TOUCHLESS HUMAN<br/>ANATOMY EXPLORER",
@@ -42,16 +45,6 @@ export const UI_STRINGS = {
     didYouKnow: "Did you know?",
     realStructure: "Real structure:",
 
-    hintMenu: "☝ Point &amp; pinch (or hold still) to select &nbsp;·&nbsp; ✋ Open palm to pause",
-    hintExplorer: "↔ Pinch &amp; drag to rotate &nbsp;·&nbsp; ☝ Point &amp; hold to inspect &nbsp;·&nbsp; ✋ Open palm to pause",
-    hintWelcome: "👋 Wave to begin",
-    hintIdle: "👋 Wave your hand to explore",
-
-    statusActive: "Hand tracking active",
-    statusNotDetected: "Hand not detected — interaction paused",
-    statusMouse: "Mouse control (hand tracking unavailable)",
-    statusSearching: "Searching for hand tracking…",
-
     bannerNoTracking: "Hand tracking unavailable. Use mouse interaction for demonstration.",
     bannerLeapConnected: "Leap Motion LM-010 connected.",
 
@@ -73,7 +66,6 @@ export const UI_STRINGS = {
   si: {
     appTitle: "ස්පර්ශ රහිත මානව ව්‍යුහ විද්‍යා ගවේෂකය",
     chooseLanguage: "භාෂාව තෝරන්න",
-    languageNote: "ඔබට ඕනෑම වේලාවක මෙය වෙනස් කළ හැක",
 
     welcomeKicker: "විශ්වවිද්‍යාල වෛද්‍ය ප්‍රදර්ශනය",
     welcomeTitleHtml: "ස්පර්ශ රහිත මානව<br/>ව්‍යුහ විද්‍යා ගවේෂකය",
@@ -96,17 +88,6 @@ export const UI_STRINGS = {
     keyStructures: "ප්‍රධාන ව්‍යුහ",
     didYouKnow: "ඔබ දැනගෙන සිටියාද?",
     realStructure: "සැබෑ ව්‍යුහය:",
-    hintMenu:
-      "☝ තේරීමට ඇඟිල්ල දිගු කර ඇඟිලි තද කරන්න (හෝ නිශ්චලව රඳවන්න) &nbsp;·&nbsp; ✋ නැවැත්වීමට අත්ල දිගු කරන්න",
-    hintExplorer:
-      "↔ කරකැවීමට ඇඟිලි තද කර අදින්න &nbsp;·&nbsp; ☝ පරීක්ෂා කිරීමට ඇඟිල්ල දිගු කර රඳවන්න &nbsp;·&nbsp; ✋ නැවැත්වීමට අත්ල දිගු කරන්න",
-    hintWelcome: "👋 ආරම්භ කිරීමට අත වනන්න",
-    hintIdle: "👋 ගවේෂණය කිරීමට ඔබේ අත වනන්න",
-
-    statusActive: "අත් නිරීක්ෂණය සක්‍රීයයි",
-    statusNotDetected: "අත හඳුනාගෙන නැත — අන්තර්ක්‍රියාව නවතා ඇත",
-    statusMouse: "මූසික පාලනය (අත් නිරීක්ෂණය නොමැත)",
-    statusSearching: "අත් නිරීක්ෂණය සොයමින්…",
 
     bannerNoTracking: "අත් නිරීක්ෂණය නොමැත. නිරූපණය සඳහා මූසික අන්තර්ක්‍රියාව භාවිතා කරන්න.",
     bannerLeapConnected: "Leap Motion LM-010 සම්බන්ධයි.",
@@ -128,4 +109,37 @@ export const UI_STRINGS = {
     breathingHintOn:
       "හුස්ම ඇතුළට ගැනීමේදී: වක්‍ර පටලය පහළට ඇදී පෙනහළු ප්‍රසාරණය වේ. හුස්ම එළියට දැමීමේදී: ඒවා ලිහිල් වී වායුව ඉවත් වේ.",
   },
+};
+
+/**
+ * SHARED_STRINGS
+ * -----------------------------------------------------------------------
+ * Interface text that deliberately reads the SAME in every language.
+ *
+ * The gesture HUD is a fixed-size strip of icon-led instructions ("↔ Pinch
+ * & drag to rotate · ☝ Point & hold to inspect · ✋ Open palm to pause") plus
+ * the short tracking-status lines. The exhibit keeps these in English for
+ * both languages on purpose: the icons carry the meaning, the strings are
+ * short enough not to wrap, and the exact same words must appear whether
+ * the visitor picked English or Sinhala.
+ *
+ * Because these live here and not in the per-language tables below, the
+ * two languages cannot drift apart -- t() falls back to this table before
+ * it falls back to English (see i18n.js).
+ *
+ * `hint*` values may contain HTML entities: they are injected with
+ * innerHTML, like their counterparts in UI_STRINGS.
+ * -----------------------------------------------------------------------
+ */
+export const SHARED_STRINGS = {
+  hintMenu: "☝ Point &amp; pinch (or hold still) to select &nbsp;·&nbsp; ✋ Open palm to pause",
+  hintExplorer:
+    "↔ Pinch &amp; drag to rotate &nbsp;·&nbsp; ☝ Point &amp; hold to inspect &nbsp;·&nbsp; ✋ Open palm to pause",
+  hintWelcome: "👋 Wave to begin",
+  hintIdle: "👋 Wave your hand to explore",
+
+  statusActive: "Hand tracking active",
+  statusNotDetected: "Hand not detected — interaction paused",
+  statusMouse: "Mouse control (hand tracking unavailable)",
+  statusSearching: "Searching for hand tracking…",
 };

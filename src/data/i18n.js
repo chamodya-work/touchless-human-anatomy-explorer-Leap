@@ -15,7 +15,7 @@
  *                           getSystem(id, getLang()))
  * -----------------------------------------------------------------------
  */
-import { UI_STRINGS } from "./uiStrings.js";
+import { SHARED_STRINGS, UI_STRINGS } from "./uiStrings.js";
 
 export const LANGUAGES = {
   en: { id: "en", nativeLabel: "English", htmlLang: "en" },
@@ -71,15 +71,17 @@ export function onLanguageChange(cb) {
 
 /**
  * Looks up a UI string for the active language.
- * Falls back to English, then to the key itself, so a missed translation
- * can never render as "undefined".
+ * Resolution order: active language -> SHARED_STRINGS (language-
+ * independent text such as the gesture HUD) -> English -> the key itself,
+ * so a missed translation can never render as "undefined".
  *
  * @param {string} key - key from uiStrings.js
  * @param {Record<string, string|number>} [vars] - {name} placeholders to fill
  */
 export function t(key, vars) {
   const active = UI_STRINGS[currentLanguage] || UI_STRINGS[DEFAULT_LANGUAGE];
-  let text = active[key] ?? UI_STRINGS[DEFAULT_LANGUAGE][key] ?? key;
+  let text =
+    active[key] ?? SHARED_STRINGS[key] ?? UI_STRINGS[DEFAULT_LANGUAGE][key] ?? key;
   if (vars) {
     Object.keys(vars).forEach((name) => {
       text = text.split(`{${name}}`).join(String(vars[name]));
