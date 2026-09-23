@@ -62,6 +62,10 @@ class App {
     this._cacheDom();
     this.viewer = new AnatomyViewer(this.dom.canvas);
     this.cursor = new VirtualCursor(this.dom.cursorLayer);
+    // Dwell-to-select for 3D parts: the viewer owns the countdown and the
+    // cursor owns the ring, so connect one to the other (see
+    // AnatomyViewer.onDwellProgress / VirtualCursor.setExternalDwell).
+    this.viewer.onDwellProgress = (progress) => this.cursor.setExternalDwell(progress);
     this.gestureIndicator = new GestureIndicator(this.dom.gestureIndicator);
     this.infoPanel = new InformationPanel(this.dom.infoPanel);
     this.idleMode = new IdleMode(this.dom.idleLayer);

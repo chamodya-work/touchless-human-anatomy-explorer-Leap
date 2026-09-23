@@ -14,13 +14,29 @@
  * and camera move here is a short eased tween, not an instant DOM/scene
  * jump -- see setModelAnimated(), the selection pulse in _animate(), and
  * the camera-focus lerp toward the selected part's world position.
+ *
+ * SELECTING A STRUCTURE has two independent paths, so a visitor is never
+ * stuck if one of them doesn't work on a given sensor/setup (the same
+ * pinch-or-dwell design the DOM controls use in VirtualCursor):
+ *   1. PINCH -- point at a part, pinch, release (PINCH_END handler).
+ *   2. DWELL -- point at a part and hold still for DWELL_MS (_updateDwell).
+ * Both are gated to the Leap Motion backend; mouse clicks already select
+ * natively, so a resting mouse pointer must not select anything by itself.
  * -----------------------------------------------------------------------
  */
 import * as THREE from "../../lib/three/three.module.min.js";
 import { handTracking, GESTURES } from "../interaction/HandTrackingController.js";
 import { PALETTE } from "../anatomy/materials.js";
+import { DWELL_MS } from "../interaction/dwell.js";
 
 const DEFAULT_ZOOM = 4.2;
+
+/** Dwell-to-select: how long the pointer must stay on one part. Shared with
+ *  the DOM dwell in VirtualCursor so both paths feel identical. */
+const DWELL_SECONDS = DWELL_MS / 1000;
+
+/** Emissive level of a merely-hovered part (0.9 = selected, 0 = plain). */
+const HOVER_EMISSIVE = 0.45;
 
 export class AnatomyViewer {
   constructor(canvas) {
@@ -49,6 +65,17 @@ export class AnatomyViewer {
     this.targetZoom = DEFAULT_ZOOM;
     this.onSelect = null; // callback(partId, mesh)
     this.onHover = null; // callback(partId | null)
+    this.onDwellProgress = null; // callback(progress 0..1 | null) -> fills the cursor ring
+
+    // Dwell-to-select state. The pinch path is event-driven; this one is
+    // accumulated per frame in _animate (see _updateDwell). The countdown is
+    // keyed on the hovered PART id rather than the individual mesh, because
+    // several meshes can share one partId (all 24 ribs are "ribs") and
+    // pointer jitter across a mesh boundary within the same category must not
+    // restart it.
+    this._dwellElapsed = 0;
+    this._dwellPartId = null; // part the running countdown belongs to
+    this._dwellFiredFor = null; // partId already activated -- must look away before it can refire
 
     // Camera "gentle focus" toward selected structure
     this.lookTarget = new THREE.Vector3(0, 0, 0);
@@ -126,6 +153,7 @@ export class AnatomyViewer {
     this.selectable = selectable.length ? selectable : group.userData.selectableParts || [];
     this.selected = null;
     this.hovered = null;
+    this._resetDwell();
   }
 
   /**
@@ -148,6 +176,7 @@ export class AnatomyViewer {
     this.selectable = [];
     this.selected = null;
     this.hovered = null;
+    this._resetDwell();
 
     // IMPORTANT: capture the model's OWN intended final scale before we
     // touch it. Real GLB assets (via ModelLoader) arrive pre-scaled to
@@ -219,6 +248,7 @@ export class AnatomyViewer {
     }
     this.currentModel = null;
     this.selectable = [];
+    this._resetDwell();
   }
 
   setZoom(target) {
@@ -247,6 +277,9 @@ export class AnatomyViewer {
     this.interactionSuspended = suspended;
     if (suspended) {
       this._dragOrigin = null;
+      // Stop any dwell countdown and clear the cursor's ring while
+      // interaction is paused (tracking lost, or the pause toast).
+      this._resetDwell();
     }
   }
 
@@ -309,8 +342,18 @@ export class AnatomyViewer {
     if (hit !== this.hovered) {
       if (this.hovered && this.hovered !== this.selected) this._setEmissive(this.hovered, 0);
       this.hovered = hit;
-      if (this.hovered && this.hovered !== this.selected) this._setEmissive(this.hovered, 0.45);
+      if (this.hovered && this.hovered !== this.selected) this._setEmissive(this.hovered, HOVER_EMISSIVE);
       this.onHover?.(hit?.userData?.partId || null);
+
+      // The dwell countdown restarts when the visitor moves onto a DIFFERENT
+      // PART -- not merely a different mesh. Leaving a part also clears the
+      // "already fired" guard, so coming back to it re-arms dwell (the same
+      // rule the DOM dwell uses).
+      const partId = hit?.userData?.partId || null;
+      if (partId !== this._dwellPartId) {
+        this._dwellPartId = partId;
+        this._resetDwell();
+      }
     }
   }
 
@@ -321,6 +364,78 @@ export class AnatomyViewer {
     if (hit && hit.userData.partId) {
       this.selectPart(hit);
     }
+  }
+
+  /**
+   * DWELL-TO-SELECT for the 3D structures -- the second, pinch-independent
+   * way to select a part (PINCH_END in _bindGestures is the first). Hold the
+   * pointer on the same part for DWELL_MS with no pinch at all and it is
+   * selected. Deliberately mirrors VirtualCursor's DOM dwell: same duration
+   * (interaction/dwell.js), same visible ring (via onDwellProgress), same
+   * "look away before it can fire again" rule.
+   *
+   * Called every frame from _animate().
+   *
+   * @param {number} dt seconds since the previous frame
+   */
+  _updateDwell(dt) {
+    const hovering = this.hovered;
+    const partId = hovering?.userData?.partId || null;
+    const armed =
+      Boolean(partId) &&
+      partId !== this._dwellFiredFor &&
+      !this.interactionSuspended &&
+      !this._dragOrigin && // mid pinch-drag is a rotation gesture, not a dwell
+      this._isDwellBackend();
+
+    if (!armed) {
+      this._dwellElapsed = 0;
+      this.onDwellProgress?.(null);
+      // Nothing is counting down, so the hovered part drops back to its
+      // plain hover glow (the selected part keeps its own pulse).
+      if (hovering && hovering !== this.selected) this._setEmissive(hovering, HOVER_EMISSIVE);
+      return;
+    }
+
+    this._dwellElapsed += dt;
+    const progress = Math.min(1, this._dwellElapsed / DWELL_SECONDS);
+
+    // Two feedback channels for the same countdown: the part itself brightens
+    // as it fills, and the cursor's ring fills with it.
+    if (hovering !== this.selected) {
+      this._setEmissive(hovering, HOVER_EMISSIVE + (0.9 - HOVER_EMISSIVE) * progress);
+    }
+    this.onDwellProgress?.(progress);
+
+    if (progress >= 1) {
+      const mesh = hovering;
+      this._resetDwell();
+      this._dwellFiredFor = partId;
+      this.selectPart(mesh);
+    }
+  }
+
+  /**
+   * Forgets any in-progress dwell (pointer moved to a new part, model
+   * swapped, interaction suspended, or something was just selected). The
+   * visitor must look away and come back before the same part can
+   * dwell-select again -- otherwise a pointer left resting on a part would
+   * re-trigger it forever.
+   */
+  _resetDwell() {
+    this._dwellElapsed = 0;
+    this._dwellFiredFor = null;
+    this.onDwellProgress?.(null);
+  }
+
+  /**
+   * Dwell is offered only while the Leap Motion backend is driving, matching
+   * VirtualCursor exactly: with the mouse a native click already selects a
+   * part, and a second selection triggered by a merely-resting pointer would
+   * fight the visitor while they read the information panel.
+   */
+  _isDwellBackend() {
+    return handTracking.state.backend === "leapmotion";
   }
 
   selectPart(mesh) {
@@ -334,6 +449,12 @@ export class AnatomyViewer {
     // Gently bias the camera's look-target toward the selected part's
     // local position (blended in _animate, not snapped instantly).
     this._lookGoal.copy(mesh.position);
+
+    // Selecting re-arms the dwell guard, so a pointer left resting on the
+    // part that was just picked cannot dwell-select it again a moment later
+    // (it must look away and come back first).
+    this._resetDwell();
+    this._dwellFiredFor = mesh.userData.partId || null;
 
     this.onSelect?.(mesh.userData.partId, mesh);
   }
@@ -364,6 +485,11 @@ export class AnatomyViewer {
     }
 
     if (this._transition) this._updateTransition(dt);
+
+    // Dwell-to-select for the 3D parts. Frame-driven (rather than a DOM
+    // timer) so it stays smooth and frame-rate independent, mirroring the
+    // DOM dwell that VirtualCursor runs on its own animation frame.
+    this._updateDwell(dt);
 
     if (this.autoRotate && this.currentModel) {
       this.modelRoot.rotation.y += dt * 0.25;

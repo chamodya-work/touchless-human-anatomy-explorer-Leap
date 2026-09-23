@@ -1,5 +1,49 @@
 # Changelog — Exhibition Quality Upgrade Pass
 
+## Dwell-to-select for 3D structures (pinch-independent selection)
+
+Reported after the bilingual pass: dwell-to-select worked for buttons and menu
+tiles, but not for the anatomical parts inside an explorer (Heart, Brain, ...).
+Holding the pointer still over a body part did nothing -- only pinch selected
+it.
+
+**Cause:** `VirtualCursor` dwells on DOM elements found with
+`document.elementFromPoint()` + `[data-selectable]`, and the 3D canvas is not
+one of those. `AnatomyViewer` selected a part **only** from the `PINCH_END`
+event, so there was no dwell path for the model at all.
+
+**Fix** -- a second, independent selection path for 3D parts, matching the
+existing one exactly:
+
+- **New `src/interaction/dwell.js`** holds `DWELL_MS` (900 ms), shared by both
+  paths so DOM controls and body parts time out identically instead of each
+  keeping its own copy.
+- **`AnatomyViewer._updateDwell(dt)`** (called per frame from `_animate`)
+  counts how long the pointer has stayed on the same part and then calls the
+  very same `selectPart()` the pinch path uses, so both produce identical
+  selection, camera focus and information panel.
+- The countdown is keyed on the hovered **part id**, not the individual mesh:
+  several meshes can share one id (all 24 ribs are `ribs`), so pointer jitter
+  across a mesh boundary inside the same category must not restart it.
+- Feedback is doubled up: the part's highlight brightens as the countdown
+  fills, and the cursor's existing dwell ring fills with it. `VirtualCursor`
+  gained `setExternalDwell(progress)` for this, and `main.js` connects the
+  viewer's `onDwellProgress` to it -- so "hold still over a body part" looks
+  and behaves exactly like "hold still over a button".
+- Guard rails (all verified): a pointer left resting on the part it just
+  selected does not re-fire (the visitor must look away and come back); a
+  pinch-drag in progress is a rotation, not a dwell; swapping models,
+  suspending interaction (tracking loss / pause toast) and clearing the model
+  all cancel a running countdown; and dwell stays off for the mouse backend,
+  where a native click already selects.
+
+Verified in a browser by driving the real `AnatomyViewer` with real POINT
+events: the ring fills (0.50 at the half-way mark), the part is selected with
+no pinch after 900 ms, the ring clears on firing, resting on it does not
+re-fire, looking away and returning re-arms it, a pinch-drag never counts as a
+dwell, the mouse backend never dwell-selects, and suspension stops a running
+countdown and clears the ring -- 13/13 checks, no runtime errors.
+
 ## Bilingual pass (English / සිංහල) — step 1: language switcher + main page
 
 Visitors can now choose the exhibit's language on the main page, and the
