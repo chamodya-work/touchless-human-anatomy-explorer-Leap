@@ -54,6 +54,13 @@ python -m http.server 8080
 or `npx serve -l 8080 .`, or any static server / VS Code Live Server.
 Then open `http://localhost:8080`.
 
+**Windows zero-install quick start:** this repo ships a portable static
+server in `tools/server/`, so an exhibition PC needs nothing installed —
+clone or copy the repo and double-click **`Start-Kiosk.bat`**. It starts
+the server and opens the explorer full-screen in Chrome/Edge (run
+`Stop-Kiosk.bat` to stop it). See **`SETUP.md`** for the full
+multi-machine guide and the manual Python/Node steps above if preferred.
+
 **Note on file size:** this build includes real GLB assets for all seven
 systems — the two largest are `muscles.glb` (~24MB, 467 meshes) and
 `skeleton.glb` (~9.4MB). First load of each explorer will take a moment

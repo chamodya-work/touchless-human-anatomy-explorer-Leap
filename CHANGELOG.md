@@ -1,5 +1,129 @@
 # Changelog — Exhibition Quality Upgrade Pass
 
+## Dwell-to-select for 3D structures (pinch-independent selection)
+
+Reported after the bilingual pass: dwell-to-select worked for buttons and menu
+tiles, but not for the anatomical parts inside an explorer (Heart, Brain, ...).
+Holding the pointer still over a body part did nothing -- only pinch selected
+it.
+
+**Cause:** `VirtualCursor` dwells on DOM elements found with
+`document.elementFromPoint()` + `[data-selectable]`, and the 3D canvas is not
+one of those. `AnatomyViewer` selected a part **only** from the `PINCH_END`
+event, so there was no dwell path for the model at all.
+
+**Fix** -- a second, independent selection path for 3D parts, matching the
+existing one exactly:
+
+- **New `src/interaction/dwell.js`** holds `DWELL_MS` (900 ms), shared by both
+  paths so DOM controls and body parts time out identically instead of each
+  keeping its own copy.
+- **`AnatomyViewer._updateDwell(dt)`** (called per frame from `_animate`)
+  counts how long the pointer has stayed on the same part and then calls the
+  very same `selectPart()` the pinch path uses, so both produce identical
+  selection, camera focus and information panel.
+- The countdown is keyed on the hovered **part id**, not the individual mesh:
+  several meshes can share one id (all 24 ribs are `ribs`), so pointer jitter
+  across a mesh boundary inside the same category must not restart it.
+- Feedback is doubled up: the part's highlight brightens as the countdown
+  fills, and the cursor's existing dwell ring fills with it. `VirtualCursor`
+  gained `setExternalDwell(progress)` for this, and `main.js` connects the
+  viewer's `onDwellProgress` to it -- so "hold still over a body part" looks
+  and behaves exactly like "hold still over a button".
+- Guard rails (all verified): a pointer left resting on the part it just
+  selected does not re-fire (the visitor must look away and come back); a
+  pinch-drag in progress is a rotation, not a dwell; swapping models,
+  suspending interaction (tracking loss / pause toast) and clearing the model
+  all cancel a running countdown; and dwell stays off for the mouse backend,
+  where a native click already selects.
+
+Verified in a browser by driving the real `AnatomyViewer` with real POINT
+events: the ring fills (0.50 at the half-way mark), the part is selected with
+no pinch after 900 ms, the ring clears on firing, resting on it does not
+re-fire, looking away and returning re-arms it, a pinch-drag never counts as a
+dwell, the mouse backend never dwell-selects, and suspension stops a running
+countdown and clears the ring -- 13/13 checks, no runtime errors.
+
+## Bilingual pass (English / සිංහල) — step 1: language switcher + main page
+
+Visitors can now choose the exhibit's language on the main page, and the
+whole interface follows that choice.
+
+- **New `src/data/i18n.js`** — single source of language state:
+  `getLang()`, `setLang()`, `onLanguageChange()` and `t(key)`. The choice is
+  kept in `localStorage` (`anatomyExplorer.language`), so the kiosk reopens
+  in the last language used; on a first visit it falls back to the browser /
+  OS locale, then English.
+- **New `src/data/uiStrings.js`** — all interface chrome (menus, panel
+  headings, HUD text, toggles, model-status lines) in both languages. A key
+  missing from a translation falls back to English rather than rendering an
+  empty label.
+- **New `src/data/anatomyData.si.js`** — the Sinhala anatomical content as a
+  separate overlay keyed by the same system + part ids. `anatomyData.js`
+  keeps English as the source language; `getSystem(id, lang)` merges the two,
+  so the stable `id` values the classifiers depend on never change with the
+  language (verified: 7 systems, 69 parts, identical ids and ordering).
+- **New `src/components/LanguageSwitcher.js`** — the 🌐 English / සිංහල
+  buttons, shown on both main pages (Welcome screen and Main menu). They
+  carry `[data-selectable]`, so they work by point + pinch like every other
+  control.
+- Components now re-render themselves on `onLanguageChange()`:
+  `MainMenu` (labels + summaries), `WelcomeScreen`, `InformationPanel`
+  (including a part already on screen, and the disclaimer), `GestureIndicator`
+  (hints + tracking status), `IdleMode`, and the title bar / Back button /
+  pause toast / tracking banner in `main.js`.
+- The 7 explorers resolve their content with `getSystem(id, getLang())` and
+  localize their control strips (Blood Flow, Breathing Mode, Brain Activity,
+  model-status lines). Toggle state is preserved across a language switch.
+- Sinhala fonts (`Iskoola Pota`, `Nirmala UI`, `Noto Sans Sinhala`) appended
+  to the font stacks so the script renders correctly on Windows, macOS and
+  Linux; `lang-switcher` styles added to `styles.css`.
+
+Verified: syntax-checked all 46 modules, asserted EN/SI structural parity and
+that no user-facing string is left untranslated, and drove the real modules in
+a headless browser (menu → explorer panel → part selection, switching back and
+forth) with zero runtime errors.
+
+## Layout and gesture-HUD fixes (bilingual pass, step 1 follow-up)
+
+Two problems reported after the first bilingual build:
+
+- **On laptop-sized screens the language row landed on top of the exhibit
+  title, and the Welcome screen could be clipped.** Measured at 1366x768
+  before the fix: the switcher occupied y=1..105, straight over the fixed
+  title bar (y=28) and the tracking banner (y=90..141) — and the Sinhala
+  Welcome screen ran off **both** the top (inner top = -103) and the bottom
+  of the screen, because the Sinhala gesture labels wrapped to two lines and
+  made the legend twice as tall as the English one. Fixed in `styles.css`
+  and `LanguageSwitcher.js`:
+  - the picker is now a single ~41px row (label + both buttons) instead of a
+    stacked block, and the "you can change this at any time" line (and its
+    `languageNote` string) is gone;
+  - `.main-menu` / `.welcome-screen` reserve room for the title bar *and* the
+    tracking banner, and centre their content with auto margins on the
+    first/last child instead of `justify-content: center` — a centred flex
+    child that outgrows a scroll container has its top half clipped and
+    unreachable, which is exactly what pushed the language row over the
+    title;
+  - the gesture legend is a fixed 5-column grid, so English and Sinhala get
+    identical column widths and the row can no longer reflow into a
+    different shape per language;
+  - added `max-height: 820px`, `max-height: 640px` and `max-width: 820px`
+    breakpoints that tighten spacing on short/narrow panels.
+  Verified at 1920x1080, 1600x900, 1366x768, 1280x720 and 1024x768: no
+  clipping, no title-bar collision, no tracking-banner collision, in both
+  languages.
+
+- **The gesture HUD must read the same in both languages.** The hint and
+  tracking-status lines moved out of the per-language tables into a single
+  `SHARED_STRINGS` table in `uiStrings.js` (`t()` in `i18n.js` now resolves
+  active language -> shared -> English -> key). One copy of each string, so
+  the two languages cannot drift apart: "Mouse control (hand tracking
+  unavailable)", "↔ Pinch & drag to rotate · ☝ Point & hold to inspect ·
+  ✋ Open palm to pause", "☝ Point & pinch (or hold still) to select ·
+  ✋ Open palm to pause", "👋 Wave to begin", "👋 Wave your hand to explore",
+  plus the remaining tracking statuses.
+
 ## LM-010 connection and pointing accuracy fixes
 
 - The mouse fallback no longer overwrites the active `leapmotion` backend

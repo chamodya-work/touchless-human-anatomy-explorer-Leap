@@ -8,22 +8,26 @@
  * -----------------------------------------------------------------------
  */
 import { handTracking, GESTURES } from "../interaction/HandTrackingController.js";
+import { t, onLanguageChange } from "../data/i18n.js";
 
-const HINTS = {
-  menu: "☝ Point &amp; pinch (or hold still) to select &nbsp;·&nbsp; ✋ Open palm to pause",
-  explorer: "↔ Pinch &amp; drag to rotate &nbsp;·&nbsp; ☝ Point &amp; hold to inspect &nbsp;·&nbsp; ✋ Open palm to pause",
-  welcome: "👋 Wave to begin",
-  idle: "👋 Wave your hand to explore",
+// Maps a context key (set by main.js as the app changes state) to the
+// uiStrings key holding the hint for it.
+const HINT_KEYS = {
+  menu: "hintMenu",
+  explorer: "hintExplorer",
+  welcome: "hintWelcome",
+  idle: "hintIdle",
 };
 
 export class GestureIndicator {
   constructor(root) {
     this.root = root;
+    this._context = "welcome";
     this.root.innerHTML = `
       <div class="gesture-indicator">
         <div class="gi-status">
           <span class="gi-dot" id="gi-dot"></span>
-          <span id="gi-status-text">Searching for hand tracking…</span>
+          <span id="gi-status-text">${t("statusSearching")}</span>
         </div>
         <div class="gi-hint" id="gi-hint"></div>
       </div>
@@ -34,26 +38,34 @@ export class GestureIndicator {
 
     handTracking.on(GESTURES.HAND_DETECTED, () => this._refreshStatus());
     handTracking.on(GESTURES.HAND_LOST, () => this._refreshStatus());
+
+    // Language switch: re-render the hint and the current tracking status.
+    onLanguageChange(() => {
+      this.setContext(this._context);
+      this._refreshStatus();
+    });
+
+    this.setContext(this._context);
     this._refreshStatus();
   }
 
   setContext(contextKey) {
-    this.hintEl.innerHTML = HINTS[contextKey] || "";
+    this._context = contextKey;
+    const key = HINT_KEYS[contextKey];
+    this.hintEl.innerHTML = key ? t(key) : "";
   }
 
   _refreshStatus() {
     const { backend, handPresent, trackingAvailable } = handTracking.state;
     if (backend === "leapmotion") {
       this.dot.className = "gi-dot " + (handPresent ? "gi-dot--live" : "gi-dot--waiting");
-      this.statusText.textContent = handPresent
-        ? "Hand tracking active"
-        : "Hand not detected — interaction paused";
+      this.statusText.textContent = handPresent ? t("statusActive") : t("statusNotDetected");
     } else if (backend === "mouse") {
       this.dot.className = "gi-dot gi-dot--fallback";
-      this.statusText.textContent = "Mouse control (hand tracking unavailable)";
+      this.statusText.textContent = t("statusMouse");
     } else if (!trackingAvailable) {
       this.dot.className = "gi-dot gi-dot--waiting";
-      this.statusText.textContent = "Searching for hand tracking…";
+      this.statusText.textContent = t("statusSearching");
     }
   }
 }

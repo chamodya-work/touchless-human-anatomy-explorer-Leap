@@ -16,7 +16,8 @@ import { loadCombinedAnatomyModel } from "../anatomy/ModelLoader.js";
 import { classifySpinalSegment } from "../anatomy/spinalCordClassifier.js";
 import { buildGenericSystemModel } from "../anatomy/genericSystemModel.js";
 import { getModelInfo } from "../data/modelManifest.js";
-import { SYSTEMS } from "../data/anatomyData.js";
+import { getSystem } from "../data/anatomyData.js";
+import { t, getLang, onLanguageChange } from "../data/i18n.js";
 import { PALETTE } from "../anatomy/materials.js";
 
 const SPINE_COLORS = {
@@ -31,11 +32,15 @@ export class NervousExplorer {
     this.viewer = viewer;
     this.infoPanel = infoPanel;
     this.controlsRoot = controlsRoot;
-    this.system = SYSTEMS.nervous;
+    this.system = getSystem("nervous", getLang());
+    this._usedRealModel = false;
+    this._langUnsub = null;
   }
 
   async mount() {
-    this.controlsRoot.innerHTML = '<p class="model-status" id="nervous-status">Loading real anatomical model...</p>';
+    this.controlsRoot.innerHTML = `<p class="model-status" id="nervous-status">${t("modelLoading")}</p>`;
+    // Resolve the content in whichever language is currently selected.
+    this.system = getSystem("nervous", getLang());
     let model;
     let usedRealModel = false;
 
@@ -92,11 +97,25 @@ export class NervousExplorer {
 
     if (usedRealModel) this._buildSignalPulse(model);
 
-    this.controlsRoot.innerHTML = `<p class="model-status${usedRealModel ? "" : " model-status--fallback"}">${
-      usedRealModel
-        ? "Real brain & spinal cord \u00b7 HuBMAP / Allen Institute (CC BY 4.0)"
-        : "Placeholder model -- see README"
-    }</p>`;
+    this._usedRealModel = usedRealModel;
+    this._renderStatus();
+
+    // Re-label the status line if the visitor switches language while this
+    // explorer is open.
+    this._langUnsub = onLanguageChange(() => {
+      this.system = getSystem("nervous", getLang());
+      this._renderStatus();
+    });
+  }
+
+  /**
+   * Rebuilds the one-line model-status strip. Called on mount and again on
+   * every language change.
+   */
+  _renderStatus() {
+    this.controlsRoot.innerHTML = `<p class="model-status${
+      this._usedRealModel ? "" : " model-status--fallback"
+    }">${this._usedRealModel ? t("statusNervous") : t("modelPlaceholder")}</p>`;
   }
 
   /** Small stylised "nerve signal" pulse traveling down the spinal cord --
@@ -130,6 +149,10 @@ export class NervousExplorer {
   }
 
   unmount() {
+    if (this._langUnsub) {
+      this._langUnsub();
+      this._langUnsub = null;
+    }
     this.controlsRoot.innerHTML = "";
     this.viewer.onSelect = null;
     this.viewer.clearModel();

@@ -14,7 +14,8 @@ import { loadAnatomyModel } from "../anatomy/ModelLoader.js";
 import { classifyMuscleGroup } from "../anatomy/muscleClassifier.js";
 import { buildGenericSystemModel } from "../anatomy/genericSystemModel.js";
 import { getModelInfo } from "../data/modelManifest.js";
-import { SYSTEMS } from "../data/anatomyData.js";
+import { getSystem } from "../data/anatomyData.js";
+import { t, getLang, onLanguageChange } from "../data/i18n.js";
 
 // Muted, anatomically-plausible tissue tones per group -- kept
 // professional/medical rather than a neon per-group rainbow.
@@ -48,11 +49,15 @@ export class MusclesExplorer {
     this.viewer = viewer;
     this.infoPanel = infoPanel;
     this.controlsRoot = controlsRoot;
-    this.system = SYSTEMS.muscles;
+    this.system = getSystem("muscles", getLang());
+    this._usedRealModel = false;
+    this._langUnsub = null;
   }
 
   async mount() {
-    this.controlsRoot.innerHTML = '<p class="model-status" id="muscles-status">Loading real anatomical model...</p>';
+    this.controlsRoot.innerHTML = `<p class="model-status" id="muscles-status">${t("modelLoading")}</p>`;
+    // Resolve the content in whichever language is currently selected.
+    this.system = getSystem("muscles", getLang());
     let model;
     let usedRealModel = false;
 
@@ -91,16 +96,32 @@ export class MusclesExplorer {
       }
     };
 
-    const statusEl = this.controlsRoot.querySelector("#muscles-status");
-    if (statusEl) {
-      statusEl.textContent = usedRealModel
-        ? "467 real muscles & tendons \u00b7 BodyParts3D + Z-Anatomy (CC BY-SA)"
-        : "Placeholder model -- see README";
-      statusEl.classList.toggle("model-status--fallback", !usedRealModel);
-    }
+    this._usedRealModel = usedRealModel;
+    this._renderStatus();
+
+    // Re-label the status line if the visitor switches language while this
+    // explorer is open.
+    this._langUnsub = onLanguageChange(() => {
+      this.system = getSystem("muscles", getLang());
+      this._renderStatus();
+    });
+  }
+
+  /**
+   * Rebuilds the one-line model-status strip. Called on mount and again on
+   * every language change.
+   */
+  _renderStatus() {
+    this.controlsRoot.innerHTML = `<p class="model-status${
+      this._usedRealModel ? "" : " model-status--fallback"
+    }">${this._usedRealModel ? t("statusMuscles") : t("modelPlaceholder")}</p>`;
   }
 
   unmount() {
+    if (this._langUnsub) {
+      this._langUnsub();
+      this._langUnsub = null;
+    }
     this.controlsRoot.innerHTML = "";
     this.viewer.onSelect = null;
     this.viewer.clearModel();

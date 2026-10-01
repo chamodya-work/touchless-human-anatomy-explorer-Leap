@@ -16,9 +16,10 @@ import { loadCombinedAnatomyModel } from "../anatomy/ModelLoader.js";
 import { classifyHeartPart } from "../anatomy/heartClassifier.js";
 import { buildHeartModel } from "../anatomy/heartModel.js";
 import { getModelInfo } from "../data/modelManifest.js";
-import { SYSTEMS } from "../data/anatomyData.js";
+import { getSystem } from "../data/anatomyData.js";
 import { PALETTE } from "../anatomy/materials.js";
 import { OpacityFader } from "../anatomy/fade.js";
+import { t, getLang, onLanguageChange } from "../data/i18n.js";
 
 const TISSUE_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xb5423c, roughness: 0.45, metalness: 0.05 });
 const VESSEL_MATERIAL = new THREE.MeshStandardMaterial({ color: 0xc03a3a, roughness: 0.4, metalness: 0.05 });
@@ -35,12 +36,16 @@ export class HeartExplorer {
     this.viewer = viewer;
     this.infoPanel = infoPanel;
     this.controlsRoot = controlsRoot;
-    this.system = SYSTEMS.heart;
+    this.system = getSystem("heart", getLang());
     this.bloodFlowActive = false;
+    this._usedRealModel = false;
+    this._langUnsub = null;
   }
 
   async mount() {
-    this.controlsRoot.innerHTML = '<p class="model-status" id="heart-status">Loading real anatomical model...</p>';
+    this.controlsRoot.innerHTML = `<p class="model-status" id="heart-status">${t("modelLoading")}</p>`;
+    // Resolve the content in whichever language is currently selected.
+    this.system = getSystem("heart", getLang());
     let model;
     let usedRealModel = false;
     let waypoints = null;
@@ -56,6 +61,10 @@ export class HeartExplorer {
         scaleReferenceTag: "heart",
         targetSize: 1.4,
       });
+      // The combined loader sets the final scale and position after its
+      // bounding-box calculation. Refresh the transform before converting
+      // mesh centers into model-local blood-flow coordinates.
+      model.updateMatrixWorld(true);
 
       const selectable = [];
       const centersByPart = {};
@@ -103,12 +112,15 @@ export class HeartExplorer {
     };
 
     this._buildBloodFlowParticles(model, waypoints || model.userData.bloodFlowWaypoints);
-    this._renderControls(
-      usedRealModel
-        ? "Real human heart & vessels \u00b7 HuBMAP Human Reference Atlas (CC BY 4.0)"
-        : "Placeholder model -- see README",
-      !usedRealModel
-    );
+    this._usedRealModel = usedRealModel;
+    this._renderControls();
+
+    // If the visitor switches language while this explorer is open, swap
+    // the control strip (and this.system) into the new language.
+    this._langUnsub = onLanguageChange(() => {
+      this.system = getSystem("heart", getLang());
+      this._renderControls();
+    });
   }
 
   _buildBloodFlowParticles(model, waypoints) {
@@ -120,15 +132,32 @@ export class HeartExplorer {
       // malformed curve.
       this._flowCurve = null;
     } else {
-      this._flowCurve = new THREE.CatmullRomCurve3(points, true);
+      // Use explicit directional segments and one return segment instead of
+      // a closed spline. A closed Catmull-Rom curve can cut across chambers
+      // and create an anatomically confusing shortcut from the aorta to the
+      // vena cava.
+      this._flowCurve = buildBloodFlowCurve(points);
     }
 
-    const count = 60;
+    const count = 84;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const mat = new THREE.PointsMaterial({ color: PALETTE.artery, size: 0.045, transparent: true, opacity: 0 });
+    geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    const mat = new THREE.PointsMaterial({
+      vertexColors: true,
+      size: 0.042,
+      transparent: true,
+      opacity: 0,
+      depthTest: false,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true,
+    });
     const particles = new THREE.Points(geo, mat);
+    particles.renderOrder = 15;
+    particles.frustumCulled = false;
     model.add(particles);
 
     const fader = new OpacityFader(particles, 0.95, 0.4);
@@ -136,26 +165,39 @@ export class HeartExplorer {
     this._flowFader = fader;
     this._flowCount = count;
     this._flowProgress = 0;
+    const venous = new THREE.Color(PALETTE.vein);
+    const arterial = new THREE.Color(PALETTE.artery);
+    const flowColor = new THREE.Color();
 
     model.userData.onFrame = (dt) => {
       fader.update(dt);
       if (!this.bloodFlowActive || !this._flowCurve) return;
-      this._flowProgress = (this._flowProgress + dt * 0.12) % 1;
+      this._flowProgress = (this._flowProgress + dt * 0.085) % 1;
       const pos = particles.geometry.attributes.position;
+      const color = particles.geometry.attributes.color;
       for (let i = 0; i < this._flowCount; i++) {
         const t = (this._flowProgress + i / this._flowCount) % 1;
         const p = this._flowCurve.getPointAt(t);
         pos.setXYZ(i, p.x, p.y, p.z);
+
+        // Deoxygenated blood returns blue through the first half of the
+        // route; oxygenated blood leaves the left ventricle red. Blend the
+        // hand-off around the lungs instead of changing color abruptly.
+        const oxygenation = Math.max(0, Math.min(1, (t - 0.42) / 0.14));
+        flowColor.copy(venous).lerp(arterial, oxygenation);
+        color.setXYZ(i, flowColor.r, flowColor.g, flowColor.b);
       }
       pos.needsUpdate = true;
+      color.needsUpdate = true;
     };
   }
 
-  _renderControls(statusText, isFallback) {
+  _renderControls() {
+    const statusText = this._usedRealModel ? t("statusHeart") : t("modelPlaceholder");
     this.controlsRoot.innerHTML = `
-      <p class="model-status${isFallback ? " model-status--fallback" : ""}">${statusText}</p>
+      <p class="model-status${this._usedRealModel ? "" : " model-status--fallback"}">${statusText}</p>
       <button class="mode-toggle" data-selectable id="blood-flow-toggle">
-        <span class="mode-toggle__icon">\u{1FA78}</span> Blood Flow Animation
+        <span class="mode-toggle__icon">\u{1FA78}</span> ${t("toggleBloodFlow")}
       </button>
     `;
     const btn = this.controlsRoot.querySelector("#blood-flow-toggle");
@@ -165,13 +207,39 @@ export class HeartExplorer {
       this._flowFader.setOn(this.bloodFlowActive);
       btn.classList.toggle("mode-toggle--active", this.bloodFlowActive);
     });
+    // A language switch rebuilds this button, so restore whatever state the
+    // visitor had already toggled instead of silently switching it off.
+    btn.classList.toggle("mode-toggle--active", this.bloodFlowActive);
   }
 
   unmount() {
+    if (this._langUnsub) {
+      this._langUnsub();
+      this._langUnsub = null;
+    }
     this.controlsRoot.innerHTML = "";
     this.viewer.onSelect = null;
     this.viewer.clearModel();
   }
+}
+
+function buildBloodFlowCurve(points) {
+  const path = new THREE.CurvePath();
+  const route = [...points, points[0]];
+
+  for (let i = 0; i < route.length - 1; i++) {
+    const start = route[i];
+    const end = route[i + 1];
+    const midpoint = start.clone().lerp(end, 0.5);
+    const distance = start.distanceTo(end);
+
+    // A small alternating bow keeps adjacent streams visually separate while
+    // preserving the intended chamber-to-chamber direction.
+    midpoint.z += (i % 2 === 0 ? 1 : -1) * distance * 0.12;
+    path.add(new THREE.QuadraticBezierCurve3(start, midpoint, end));
+  }
+
+  return path;
 }
 
 /**

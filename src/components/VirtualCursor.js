@@ -21,11 +21,15 @@
  * Both are gated to the Leap Motion backend only. Mouse/touch already
  * has native clicks; synthesizing a second selection on top of that
  * caused a real double-toggle bug (see CHANGELOG.md).
+ *
+ * The same ring is also used for the 3D anatomical parts, which this class
+ * cannot see with elementFromPoint -- AnatomyViewer drives it through
+ * setExternalDwell(), and DWELL_MS (interaction/dwell.js) is shared by both
+ * so the two paths time out together.
  * -----------------------------------------------------------------------
  */
 import { handTracking, GESTURES } from "../interaction/HandTrackingController.js";
-
-const DWELL_MS = 900;
+import { DWELL_MS } from "../interaction/dwell.js";
 
 export class VirtualCursor {
   constructor(root) {
@@ -50,6 +54,11 @@ export class VirtualCursor {
     this._dwellTarget = null;
     this._dwellStart = 0;
     this._dwellFiredFor = null; // target we already fired for -- must look away before it can refire
+
+    // Progress of a dwell that someone else is drawing -- the 3D anatomical
+    // parts in AnatomyViewer, which elementFromPoint cannot see. null = not
+    // active, 0..1 = that dwell currently owns the ring.
+    this._externalDwell = null;
 
     // Light additional screen-space smoothing on top of whatever the
     // input backend already provides -- cheap insurance against visible
@@ -81,6 +90,27 @@ export class VirtualCursor {
     this.enabled = enabled;
     this.el.classList.toggle("hidden", !enabled);
     if (!enabled) this._resetDwell();
+  }
+
+  /**
+   * Lets another subsystem drive the dwell ring for something the cursor
+   * cannot see with elementFromPoint -- currently the 3D anatomical parts
+   * in AnatomyViewer. It is the SAME ring used for DOM controls, so
+   * "point at a body part and hold still" looks and behaves exactly like
+   * "point at a button and hold still".
+   *
+   * @param {number|null} progress 0..1 while dwelling, null when not.
+   */
+  setExternalDwell(progress) {
+    const wasExternal = this._externalDwell !== null;
+    this._externalDwell = progress;
+    if (progress !== null) {
+      this._setRingProgress(progress);
+    } else if (wasExternal && !this._dwellTarget) {
+      // The external (3D part) dwell just ended -- clear the ring it was
+      // drawing, unless a DOM dwell has since taken it over.
+      this._setRingProgress(0);
+    }
   }
 
   _screenPos(pos) {
@@ -139,7 +169,15 @@ export class VirtualCursor {
    */
   _updateDwell(selectable) {
     if (!this._isLeapBackend() || !selectable) {
-      this._resetDwell();
+      if (this._externalDwell === null) {
+        this._resetDwell();
+      } else {
+        // A 3D-part dwell owns the ring this frame. Leave the ring alone,
+        // but forget any DOM dwell candidate so it cannot resume half-way
+        // through later (which would fire instantly).
+        this._dwellTarget = null;
+        this._dwellFiredFor = null;
+      }
       return;
     }
 

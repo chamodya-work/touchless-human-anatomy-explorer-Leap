@@ -5,6 +5,12 @@
  * All anatomical text, facts and structure lists live here, completely
  * separated from rendering / UI code, as required by the brief.
  *
+ * ENGLISH IS THE SOURCE LANGUAGE. The Sinhala (සිංහල) translation lives in
+ * anatomyData.si.js as a separate overlay keyed by the same system + part
+ * ids, so the two languages never drift structurally and the stable `id`
+ * values the classifiers depend on are language-independent.
+ * Read whichever language is on screen with getSystem(id, lang).
+ *
  * Every system exposes:
  *   - id, label, icon (emoji fallback, replace with SVG icon if desired)
  *   - summary: short line shown on the main menu
@@ -16,6 +22,7 @@
  * not constitute medical advice, diagnosis or treatment guidance.
  * -----------------------------------------------------------------------
  */
+import { SI_DISCLAIMER, SI_SYSTEMS } from "./anatomyData.si.js";
 
 export const DISCLAIMER =
   "For educational purposes only. This exhibit does not provide medical diagnosis or treatment advice.";
@@ -58,7 +65,6 @@ export const SYSTEMS = {
       },
     ],
   },
-
   heart: {
     id: "heart",
     label: "HEART",
@@ -107,7 +113,6 @@ export const SYSTEMS = {
       "aorta",
     ],
   },
-
   lungs: {
     id: "lungs",
     label: "LUNGS",
@@ -131,7 +136,6 @@ export const SYSTEMS = {
       { id: "diaphragm", name: "Diaphragm", function: "The dome-shaped muscle beneath the lungs that drives breathing." },
     ],
   },
-
   skeleton: {
     id: "skeleton",
     label: "SKELETON",
@@ -176,7 +180,6 @@ export const SYSTEMS = {
       { id: "feet", name: "Foot Bones", function: "26 small bones per foot — tarsals, metatarsals and toe phalanges — supporting weight and balance." },
     ],
   },
-
   muscles: {
     id: "muscles",
     label: "MUSCLES",
@@ -215,7 +218,6 @@ export const SYSTEMS = {
       { id: "foot", name: "Foot Muscles", function: "Small intrinsic muscles supporting balance and the arch of the foot." },
     ],
   },
-
   digestive: {
     id: "digestive",
     label: "DIGESTIVE SYSTEM",
@@ -242,7 +244,6 @@ export const SYSTEMS = {
       { id: "bileDucts", name: "Bile Duct Network", function: "Carries bile from the liver and gallbladder, and digestive enzymes from the pancreas, into the duodenum." },
     ],
   },
-
   nervous: {
     id: "nervous",
     label: "NERVOUS SYSTEM",
@@ -278,6 +279,51 @@ export const SYSTEM_ORDER = [
   "nervous",
 ];
 
-export function getSystem(id) {
-  return SYSTEMS[id] || null;
+/**
+ * Returns a system's content in the requested language.
+ *
+ * The English base is authoritative for structure (`id`, `icon`,
+ * `bloodFlowPath`, and the order/set of `parts`); the Sinhala overlay only
+ * supplies translated text, matched by the same stable ids. Anything the
+ * overlay doesn't cover silently falls back to English, so a missing
+ * translation shows English text rather than an empty panel.
+ *
+ * @param {string} id   system id, e.g. "brain"
+ * @param {"en"|"si"} [lang] language to render in (English by default)
+ * @returns {object|null} merged system, or null for an unknown id
+ */
+export function getSystem(id, lang = "en") {
+  const base = SYSTEMS[id];
+  if (!base) return null;
+  if (lang !== "si") return base;
+
+  const overlay = SI_SYSTEMS[id];
+  if (!overlay) return base;
+
+  return {
+    ...base,
+    ...overlay,
+    // `id`, `icon` and `bloodFlowPath` are language-independent and come
+    // from the base; overlaying `parts` must keep the base's ordering and
+    // every part id the classifiers emit.
+    parts: base.parts.map((part) => ({
+      ...part,
+      ...(overlay.parts?.[part.id] || {}),
+    })),
+  };
+}
+
+/** All systems, in menu order, in one language -- for re-rendering lists. */
+export function getAllSystems(lang = "en") {
+  return SYSTEM_ORDER.map((id) => getSystem(id, lang));
+}
+
+/** The educational disclaimer in the given language. */
+export function getDisclaimer(lang = "en") {
+  return lang === "si" ? SI_DISCLAIMER : DISCLAIMER;
+}
+
+/** True when a Sinhala translation exists for this system. */
+export function hasSinhala(id) {
+  return Boolean(SI_SYSTEMS[id]);
 }
