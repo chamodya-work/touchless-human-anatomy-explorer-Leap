@@ -6,14 +6,16 @@
  * animates airflow particles.
  *
  * Loads the REAL lungs.glb (HuBMAP Human Reference Atlas, CC BY 4.0 --
- * see ATTRIBUTION.md), tagging every mesh via lungClassifier.js. A small
- * procedural diaphragm is added underneath (not part of this dataset --
- * see README/ATTRIBUTION). Falls back entirely to the procedural
- * placeholder if the real GLB is missing or fails to load.
+ * see ATTRIBUTION.md), tagging every mesh via lungClassifier.js, plus a
+ * real BodyParts3D diaphragm (CC BY-SA 2.1 Japan) pre-registered into the
+ * lungs' coordinate frame and loaded as an OPTIONAL second source. If
+ * diaphragm.glb is missing, a small procedural disc is used instead.
+ * Falls back entirely to the procedural placeholder if lungs.glb is
+ * missing or fails to load.
  * -----------------------------------------------------------------------
  */
 import * as THREE from "../../lib/three/three.module.min.js";
-import { loadAnatomyModel } from "../anatomy/ModelLoader.js";
+import { loadCombinedAnatomyModel, findSourceTag } from "../anatomy/ModelLoader.js";
 import { classifyLungPart } from "../anatomy/lungClassifier.js";
 import { buildLungsModel } from "../anatomy/lungsModel.js";
 import { getModelInfo } from "../data/modelManifest.js";
@@ -30,7 +32,7 @@ function materialFor(partId) {
   return LUNG_MATERIAL.clone();
 }
 
-/** Small procedural diaphragm disc -- not part of the HuBMAP respiratory dataset. */
+/** FALLBACK ONLY: small procedural diaphragm disc, used when diaphragm.glb is missing. */
 function buildProceduralDiaphragm(radius) {
   const geo = new THREE.CylinderGeometry(radius, radius, radius * 0.08, 28);
   const mat = new THREE.MeshStandardMaterial({ color: 0xc9a0a0, roughness: 0.6 });
@@ -48,6 +50,7 @@ export class LungExplorer {
     this.system = getSystem("lungs", getLang());
     this.breathingActive = false;
     this._usedRealModel = false;
+    this._usedRealDiaphragm = false;
     this._langUnsub = null;
   }
 
@@ -61,13 +64,20 @@ export class LungExplorer {
 
     try {
       const info = getModelInfo("lungs");
-      model = await loadAnatomyModel(info.path, { orient: info.orient, targetSize: 2.0 });
+      model = await loadCombinedAnatomyModel(info.sources, {
+        orient: info.orient,
+        targetSize: 2.0,
+        scaleReferenceTag: info.scaleReferenceTag,
+      });
+      // Raw-source units per scene unit: the viewer later shrinks the model
+      // to 0.01x during its intro transition, so capture this NOW.
+      const modelScale = model.scale.x || 1;
 
       const selectable = [];
       const lungMeshesByPart = { leftLung: [], rightLung: [] };
       model.traverse((obj) => {
         if (obj.isMesh) {
-          const partId = classifyLungPart(obj.name);
+          const partId = classifyLungPart(obj.name, findSourceTag(obj));
           obj.userData.lungName = obj.name;
           obj.userData.partId = partId;
           obj.material = materialFor(partId);
@@ -78,18 +88,30 @@ export class LungExplorer {
         }
       });
 
-      // Procedural diaphragm, sized/positioned from the real lungs' own
-      // bounding box so it sits reasonably underneath them.
-      const box = new THREE.Box3().setFromObject(model);
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      const diaphragm = buildProceduralDiaphragm(Math.max(size.x, size.z) * 0.55);
-      diaphragm.position.set(0, box.min.y + size.y * 0.02, 0);
-      model.add(diaphragm);
-      selectable.push(diaphragm);
+      // The real diaphragm is the group tagged "diaphragm". Breathing moves
+      // that whole group; its local units are raw source metres, so convert
+      // the original 0.08 scene-unit travel through the model scale.
+      let diaphragm = model.children.find((c) => c.userData.sourceTag === "diaphragm");
+      let diaphragmTravel;
+      if (diaphragm) {
+        diaphragmTravel = 0.08 / modelScale;
+        this._usedRealDiaphragm = true;
+      } else {
+        // Fallback: procedural disc, sized/positioned from the real lungs'
+        // own bounding box so it sits reasonably underneath them.
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        diaphragm = buildProceduralDiaphragm(Math.max(size.x, size.z) * 0.55);
+        diaphragm.position.set(0, box.min.y + size.y * 0.02, 0);
+        model.add(diaphragm);
+        selectable.push(diaphragm);
+        diaphragmTravel = 0.08;
+        this._usedRealDiaphragm = false;
+      }
 
       model.userData.selectableParts = selectable;
-      breathingParts = { lungMeshesByPart, diaphragm, box };
+      breathingParts = { lungMeshesByPart, diaphragm, diaphragmTravel };
       usedRealModel = true;
     } catch (err) {
       console.error("[LungExplorer] Real GLB failed to load, falling back to procedural placeholder:", err);
@@ -104,7 +126,7 @@ export class LungExplorer {
       const part = this.system.parts.find((p) => p.id === partId);
       if (part) {
         this.infoPanel.showPart(part, {
-          realName: mesh?.userData?.lungName,
+          realName: mesh?.userData?.isProcedural ? null : mesh?.userData?.lungName,
           systemId: "lungs",
         });
       }
@@ -127,7 +149,7 @@ export class LungExplorer {
     });
   }
 
-  _buildBreathingAnimationReal(model, { lungMeshesByPart, diaphragm }) {
+  _buildBreathingAnimationReal(model, { lungMeshesByPart, diaphragm, diaphragmTravel }) {
     const baseScales = new Map();
     [...lungMeshesByPart.leftLung, ...lungMeshesByPart.rightLung].forEach((m) => baseScales.set(m, m.scale.clone()));
     const baseDiaphragmY = diaphragm.position.y;
@@ -157,7 +179,7 @@ export class LungExplorer {
         const base = baseScales.get(m);
         m.scale.set(base.x * expand, base.y * expand, base.z * expand);
       });
-      diaphragm.position.y = baseDiaphragmY - breathe * 0.08;
+      diaphragm.position.y = baseDiaphragmY - breathe * diaphragmTravel;
 
       const pos = airflow.geometry.attributes.position;
       for (let i = 0; i < count; i++) {
@@ -213,7 +235,11 @@ export class LungExplorer {
   }
 
   _renderControls() {
-    const statusText = this._usedRealModel ? t("statusLungs") : t("modelPlaceholder");
+    const statusText = !this._usedRealModel
+      ? t("modelPlaceholder")
+      : this._usedRealDiaphragm
+      ? t("statusLungs")
+      : t("statusLungsNoDiaphragm");
     this.controlsRoot.innerHTML = `
       <p class="model-status${this._usedRealModel ? "" : " model-status--fallback"}">${statusText}</p>
       <button class="mode-toggle" data-selectable id="breathing-toggle">

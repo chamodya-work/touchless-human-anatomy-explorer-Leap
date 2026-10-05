@@ -17,16 +17,20 @@
  * from the file, but duodenum is split out from the rest of the small
  * intestine since it's a distinct, commonly-taught structure).
  *
- * NOTE: this dataset does not include a stomach or esophagus model (the
- * HuBMAP HRA had not modeled those organs as of this build) -- a small
- * clearly-labeled procedural stomach is added alongside the real organs
- * in DigestiveExplorer.js so visitors still see a complete digestive
- * tract. See ATTRIBUTION.md and README for full detail.
+ * NOTE: the HuBMAP files above don't include a stomach, so a seventh,
+ * OPTIONAL source -- stomach.glb, from BodyParts3D (CC BY-SA 2.1 Japan),
+ * pre-registered into the same coordinate frame -- is loaded alongside
+ * them (tag "stomach"). If that file is missing, DigestiveExplorer.js
+ * falls back to a small procedural stomach. See ATTRIBUTION.md / README.
  * -----------------------------------------------------------------------
  */
 
 export function classifyDigestivePart(rawName, sourceTag) {
   const n = (rawName || "").toLowerCase().trim();
+
+  // Real stomach from BodyParts3D (stomach.glb), registered into this
+  // dataset's coordinate frame -- see ATTRIBUTION.md.
+  if (sourceTag === "stomach") return "stomach";
 
   if (sourceTag === "gallbladder") return "gallbladder";
 

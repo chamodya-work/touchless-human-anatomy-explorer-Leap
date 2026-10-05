@@ -43,7 +43,12 @@ async function loadRawGLTF(path) {
           path,
           (gltf) => resolve(gltf),
           undefined,
-          (err) => reject(err)
+          (err) => {
+            // Don't cache a failure -- a later visit may succeed (e.g. the
+            // file was copied in after the kiosk started).
+            cache.delete(path);
+            reject(err);
+          }
         );
       })
     );
@@ -100,7 +105,12 @@ export async function loadAnatomyModel(path, opts = {}) {
  * connecting into the bronchi). Only the combined group is scaled and
  * centered as a whole at the end.
  *
- * @param {Array<{path: string, tag?: string, exclude?: (name:string)=>boolean}>} sources
+ * @param {Array<{path: string, tag?: string, optional?: boolean, exclude?: (name:string)=>boolean}>} sources
+ *   `optional: true` marks a supplementary source (e.g. the BodyParts3D
+ *   stomach/diaphragm added to HuBMAP organs). If it fails to load it is
+ *   skipped with a console warning instead of failing the whole model;
+ *   its tag is listed in the result's `userData.skippedSources` so the
+ *   caller can substitute a procedural stand-in.
  *   `exclude`, if given, is tested against each mesh's lowercased name;
  *   matching meshes are removed BEFORE the combined bounding box/scale
  *   is computed -- use this to drop parts of a source file that would
@@ -119,9 +129,18 @@ export async function loadAnatomyModel(path, opts = {}) {
 export async function loadCombinedAnatomyModel(sources, opts = {}) {
   const { orient = ORIENT_BP3D, targetSize = 2.6, scaleReferenceTag = null } = opts;
 
-  const parts = await Promise.all(
-    sources.map(async ({ path, tag, exclude }) => {
-      const gltf = await loadRawGLTF(path);
+  const skipped = [];
+  const loaded = await Promise.all(
+    sources.map(async ({ path, tag, exclude, optional }) => {
+      let gltf;
+      try {
+        gltf = await loadRawGLTF(path);
+      } catch (err) {
+        if (!optional) throw err;
+        console.warn(`[ModelLoader] Optional source "${tag || path}" failed to load; skipping:`, err);
+        skipped.push(tag || path);
+        return null;
+      }
       const root = gltf.scene.clone(true);
       root.userData.sourceTag = tag || null;
 
@@ -136,9 +155,11 @@ export async function loadCombinedAnatomyModel(sources, opts = {}) {
       return root;
     })
   );
+  const parts = loaded.filter(Boolean);
 
   const combined = new THREE.Group();
   parts.forEach((p) => combined.add(p));
+  combined.userData.skippedSources = skipped;
 
   if (orient === ORIENT_BP3D) {
     combined.rotation.x = -Math.PI / 2;
@@ -166,6 +187,16 @@ export async function loadCombinedAnatomyModel(sources, opts = {}) {
   combined.position.sub(center);
 
   return combined;
+}
+
+/** Walks up from a mesh to find the `sourceTag` set by loadCombinedAnatomyModel(). */
+export function findSourceTag(obj) {
+  let cur = obj;
+  while (cur) {
+    if (cur.userData?.sourceTag) return cur.userData.sourceTag;
+    cur = cur.parent;
+  }
+  return null;
 }
 
 /** Recursively disposes geometries/materials/textures under a root object. */

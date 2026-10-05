@@ -34,13 +34,14 @@ import { DebugOverlay } from "./components/DebugOverlay.js";
 import { HeartExplorer } from "./components/HeartExplorer.js";
 import { BrainExplorer } from "./components/BrainExplorer.js";
 import { LungExplorer } from "./components/LungExplorer.js";
+import { EyeExplorer } from "./components/EyeExplorer.js";
 import { SkeletonExplorer } from "./components/SkeletonExplorer.js";
 import { MusclesExplorer } from "./components/MusclesExplorer.js";
 import { DigestiveExplorer } from "./components/DigestiveExplorer.js";
 import { NervousExplorer } from "./components/NervousExplorer.js";
 import { GenericExplorer } from "./components/GenericExplorer.js";
 
-import { buildBodyModel } from "./anatomy/bodyModel.js";
+import { loadBodyModel } from "./anatomy/bodyModel.js";
 import { getSystem } from "./data/anatomyData.js";
 import { initLanguage, onLanguageChange, t, getLang } from "./data/i18n.js";
 
@@ -58,6 +59,7 @@ class App {
     this.idleTimer = null;
     this.isIdle = false;
     this._mountToken = 0; // guards against a stale async mount() finishing late
+    this._bodyToken = 0; // same, for the async full-body model on Welcome/Menu/Idle
 
     this._cacheDom();
     this.viewer = new AnatomyViewer(this.dom.canvas);
@@ -223,8 +225,7 @@ class App {
       this.currentExplorer = null;
     }
     this.idleMode.show();
-    this.viewer.setModelAnimated(buildBodyModel());
-    this.viewer.resetView();
+    this._showBodyModel();
     this.viewer.autoRotate = true;
     this.infoPanel.clear();
     this.dom.controls.innerHTML = "";
@@ -291,21 +292,32 @@ class App {
       this.dom.appTitle.classList.add("hidden");
       this.cursor.setEnabled(true);
       this.gestureIndicator.setContext("welcome");
-      this.viewer.setModelAnimated(buildBodyModel());
-      this.viewer.resetView();
+      this._showBodyModel();
     } else if (next === STATE.MENU) {
       this.menu.show();
       this.infoPanel.clear();
       this.dom.controls.innerHTML = "";
       this.cursor.setEnabled(true);
       this.gestureIndicator.setContext("menu");
-      this.viewer.setModelAnimated(buildBodyModel());
-      this.viewer.resetView();
+      this._showBodyModel();
     } else if (next === STATE.EXPLORER) {
       this.dom.backBtn.classList.remove("hidden");
       this.cursor.setEnabled(true);
       this.gestureIndicator.setContext("explorer");
     }
+  }
+
+  /**
+   * Shows the full-body model (real skin, or the procedural fallback). The
+   * load is async, so a token drops the result if the visitor has already
+   * moved on (e.g. opened an explorer) before it finished.
+   */
+  async _showBodyModel() {
+    const token = ++this._bodyToken;
+    const model = await loadBodyModel();
+    if (token !== this._bodyToken) return;
+    this.viewer.setModelAnimated(model);
+    this.viewer.resetView();
   }
 
   _enterMenu() {
@@ -320,6 +332,7 @@ class App {
     if (this.currentExplorer) this.currentExplorer.unmount();
 
     const token = ++this._mountToken;
+    this._bodyToken++; // cancel any pending full-body model swap
     const deps = { viewer: this.viewer, infoPanel: this.infoPanel, controlsRoot: this.dom.controls };
     let explorer;
     switch (systemId) {
@@ -331,6 +344,9 @@ class App {
         break;
       case "lungs":
         explorer = new LungExplorer(deps);
+        break;
+      case "eye":
+        explorer = new EyeExplorer(deps);
         break;
       case "skeleton":
         explorer = new SkeletonExplorer(deps);

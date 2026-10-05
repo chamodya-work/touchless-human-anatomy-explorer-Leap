@@ -1,0 +1,16 @@
+import fs from "node:fs";
+import { JSDOM } from "/home/claude/testenv/node_modules/jsdom/lib/api.js";
+const dom=new JSDOM("<!doctype html><div id='c'></div>",{url:"http://localhost/"});for(const k of ["window","document","localStorage"])Object.defineProperty(globalThis,k,{value:dom.window[k],configurable:true});
+const ROOT="/home/claude/touchless-human-anatomy-explorer-Leap/";
+const {GLTFLoader}=await import(ROOT+"lib/three/examples/jsm/loaders/GLTFLoader.js");
+GLTFLoader.prototype.load=function(path,onLoad,_p,onErr){try{if(path.includes("eye_orbit"))throw new Error("ENOENT");const b=fs.readFileSync(ROOT+path);this.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),"",onLoad,onErr)}catch(e){onErr(e)}};
+console.warn=()=>{};
+const THREE=await import(ROOT+"lib/three/three.module.min.js");const {EyeExplorer}=await import(ROOT+"src/components/EyeExplorer.js");
+const {UI_STRINGS}=await import(ROOT+"src/data/uiStrings.js");
+const keys=Object.keys(UI_STRINGS.en).filter(k=>/eye/i.test(k));console.log("eye UI keys",keys.length,"missing in si:",keys.filter(k=>!(k in UI_STRINGS.si)));
+const viewer={modelRoot:{rotation:new THREE.Euler()},autoRotate:true,zoom:4.2,setZoom(z){this.zoom=z},selected:null,hovered:null,setModelAnimated(m,o){this.m=m;m.updateMatrixWorld(true)},resetView(){},clearModel(){},_setEmissive(){}};
+const root=document.getElementById("c");const ex=new EyeExplorer({viewer,infoPanel:{showSystem(){},showPart(){}},controlsRoot:root});await ex.mount();
+console.log("real",ex._usedRealModel,"orbit",ex._hasOrbit,"| buttons",[...document.querySelectorAll(".eye-rail button")].map(b=>b.id).join(","),"| status:",document.querySelector(".eye-status").textContent);
+document.querySelector("#eye-gaze").click();for(let i=0;i<300;i++)ex._tick(1/60);
+const g=viewer.m.children.find(c=>c.userData.sourceTag==="globe");console.log("globe yaw deg",(g.rotation.y*180/Math.PI).toFixed(1),"| selectable",viewer.m.userData.selectableParts.length);
+document.querySelector("#eye-inside").click();console.log("inside selectable",viewer.m.userData.selectableParts.length);

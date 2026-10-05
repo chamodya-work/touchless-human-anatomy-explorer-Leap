@@ -37,8 +37,15 @@ export class InformationPanel {
 
   _attributionLine(systemId) {
     const info = getModelInfo(systemId);
-    if (!info || info.type !== "glb") return "";
-    return `<p class="info-panel__attribution">${info.attribution} &middot; ${info.license}</p>`;
+    if (!info) return "";
+    const supplementary = info.supplementary || [];
+    // Single-asset systems always show their credit; combined systems show it
+    // only when they carry extra parts from a different dataset (those need
+    // their own CC BY-SA credit on screen).
+    if (info.type !== "glb" && !info.showAttribution && !supplementary.length) return "";
+    const lines = [`${info.attribution} &middot; ${info.license}`];
+    supplementary.forEach((s) => lines.push(`${s.attribution} &middot; ${s.license}`));
+    return `<p class="info-panel__attribution">${lines.join("<br>")}</p>`;
   }
 
   showSystem(system) {

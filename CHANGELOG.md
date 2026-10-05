@@ -1,5 +1,98 @@
 # Changelog — Exhibition Quality Upgrade Pass
 
+## Eye polish pass: realism, working animations, layout
+
+Found by running the real app in a real (software-rendered) Chromium instead
+of only a stub; each item below was reproduced, fixed and re-checked there.
+
+- **Animations that looked "not working" (all fixed):**
+  - The viewer auto-rotates models forever, so the pupil/gaze effects spun out
+    of view. Demos now stop the spin, zoom in and glide to a view that shows
+    the effect (front for pupil/gaze), restoring spin + zoom afterwards.
+  - Focus Near/Far was nearly invisible (solid black lens). It now opens a true
+    cut-away (clipping plane through the globe, orbit hidden), the lens
+    thickens 28% and glows; picking ignores the sliced-off half.
+  - Tear particles rendered at ~0.1 px (`Points.size` is in scene units and is
+    not scaled by the 62x model scale). Now sized correctly, as soft round
+    droplets.
+  - Gaze preview used a camera yaw that cancelled the eye's own turn; now front
+    view, and the active muscles' tendons glow where they are visible.
+  - A lens emissive defaulted to intensity 1 and flashed blue (a blue pupil)
+    on entry; it now starts at 0.
+- **Toy-like look → anatomical:** shader-drawn sclera vessels, pale tendons
+  fading into striated muscle, fibrous iris with crypts/collarette/limbal ring,
+  vascular retina, natural tissue colours for lacrimal gland/ducts/nerve,
+  additive-glass cornea, studio environment map for wet reflections, dark
+  vitreous filling the gap around the iris, tighter framing (target 1.4).
+- **Light Reflex** gets an ambient glow/dim cue around the eye.
+- **Layout:** demo buttons + live explanation + status moved to a left rail
+  (they were being covered by the info panel / gesture hint box).
+- **Tests:** 43 Node checks (new: view gliding, zoom, overlay, cut-away, orbit
+  hiding, lens-emissive regression) plus a real-browser harness
+  (`tools/eye_extraction/browser_harness/`: Electron + Xvfb + SwiftShader).
+
+## New system: Eye (8th body system)
+
+A real-scale human eye from Z-Anatomy (CC BY-SA 4.0), with five animated
+demonstrations. Added to the menu (4 × 2 grid), English + Sinhala.
+
+- **New assets:** `assets/models/eye_globe.glb` (2.4 MB: sclera, cornea, iris,
+  lens, retina, vitreous, anterior chamber, zonular fibres) and
+  `eye_orbit.glb` (0.4 MB: six eye muscles, levator, tendinous ring, optic
+  nerve, lacrimal gland/canaliculus/sac/duct). Centred on the globe's rotation
+  centre, metres, Y-up, cornea toward +Z. Extraction: Blender (bpy) with
+  modifiers applied; scripts in `tools/eye_extraction/`.
+- **New code:** `src/components/EyeExplorer.js` (19 selectable parts; Light
+  Reflex, Focus Near/Far, Eye Movement, Tear Flow, See Inside),
+  `src/anatomy/eyeClassifier.js`, `src/anatomy/eyeModel.js` (procedural
+  fallback).
+- **Wiring:** `modelManifest.js` (`eye`, `glb-combined`, optional `orbit`
+  source, `scaleReferenceTag: "globe"`, `showAttribution`), `anatomyData.js`
+  + `anatomyData.si.js` (`eye`, `SYSTEM_ORDER`), `uiStrings.js` (en + si),
+  `main.js` (`case "eye"`), `InformationPanel.js` (credit line for
+  `showAttribution`), `styles.css` (wrapping toggle row + in-flow explainer).
+- **Interaction design:** nested structures are reachable through a "See
+  Inside" mode; shells/volumes lose raycast ties by 10 mm so the part inside
+  is picked. Animations edit cloned vertex positions or rotate a parent
+  group because the viewer's selection pulse owns `mesh.scale`.
+- **Docs:** README (§7 assets, Eye description, §13 status), ATTRIBUTION.md
+  (Z-Anatomy eye section incl. third-party-content caveat).
+- **Tested (Node + jsdom, real GLBs):** see README §13. **Not tested:** GPU
+  rendering look, Leap dwell on the 5-button row, Sinhala wording review.
+
+## Real stomach, diaphragm and full-body model (replacing the last placeholders)
+
+All three remaining procedural pieces are now real BodyParts3D meshes
+(CC BY-SA 2.1 Japan), each keeping its procedural version as a fallback.
+
+- **New assets:** `assets/models/stomach.glb` (FMA7148), `diaphragm.glb`
+  (FMA13295), `skin.glb` (FMA7163). Stomach and diaphragm are pre-registered
+  into the HuBMAP frame; skin stays in BP3D space (`orient: "bp3d"`).
+- **`ModelLoader.js`:** `loadCombinedAnatomyModel()` accepts
+  `optional: true` sources (skipped with a warning and listed in
+  `userData.skippedSources` on failure); failed loads are no longer cached;
+  new exported `findSourceTag()`.
+- **`modelManifest.js`:** new `body` entry; `lungs` is now `glb-combined`
+  (`lungs` + optional `diaphragm`, `scaleReferenceTag: "lungs"` so lung
+  framing is unchanged); `digestive` gains an optional `stomach` source;
+  `supplementary` lists carry the extra CC BY-SA credits; notes updated.
+- **Classifiers:** `digestiveClassifier` maps source tag `stomach`;
+  `lungClassifier.classifyLungPart(name, sourceTag)` maps `diaphragm`.
+- **Explorers:** procedural stomach/diaphragm only when the real source is
+  absent; breathing animation moves the real diaphragm group using a
+  scale-corrected travel; `statusDigestive`/`statusLungs` (en + si) name the
+  BodyParts3D part, with `...NoStomach` / `...NoDiaphragm` variants for the
+  fallback case.
+- **Body:** `bodyModel.js` gains async `loadBodyModel()`; `main.js` uses it
+  through `_showBodyModel()` with a token so a late load can't replace an
+  explorer.
+- **`InformationPanel`:** prints `supplementary` attributions (combined
+  systems without extra parts are unchanged).
+- **Tested (Node, headless):** all GLBs parse; classification counts;
+  lung scale/position identical to the previous loader path; digestive
+  scale changes 0.3%; each fallback path (missing stomach / diaphragm /
+  skin). **Not tested:** rendering in a browser or on the kiosk.
+
 ## Dwell-to-select for 3D structures (pinch-independent selection)
 
 Reported after the bilingual pass: dwell-to-select worked for buttons and menu
