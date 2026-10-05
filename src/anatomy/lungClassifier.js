@@ -22,7 +22,10 @@
  * and airway names like "left_main_bronchus" must not be mistaken for
  * lung tissue.
  */
-function classify(n) {
+function classify(n, sourceTag) {
+  // Real diaphragm from BodyParts3D (diaphragm.glb), registered into the
+  // lungs' coordinate frame and loaded as an optional second source.
+  if (sourceTag === "diaphragm") return "diaphragm";
   if (/trachea|cricoid|thyroid_cartilage|epiglottic|arytenoid|corniculate|carina/.test(n)) return "trachea";
   if (/^vh_m_lungs$|^vh_m_respiratory_system$/.test(n)) return null; // whole-system wrapper
   if (n.includes("lungs_l") || (n.includes("hilum") && n.endsWith("_l"))) return "leftLung";
@@ -31,7 +34,7 @@ function classify(n) {
   return null;
 }
 
-export function classifyLungPart(rawName) {
+export function classifyLungPart(rawName, sourceTag = null) {
   const n = (rawName || "").toLowerCase().trim();
-  return classify(n);
+  return classify(n, sourceTag);
 }

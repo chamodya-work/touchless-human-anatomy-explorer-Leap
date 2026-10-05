@@ -1,18 +1,52 @@
 /**
  * bodyModel.js
  * -----------------------------------------------------------------------
- * Full-body placeholder model shown on the Welcome screen, Idle mode, and
- * as a backdrop on the Main Menu. Built from primitives so the app runs
- * with zero external assets out of the box.
+ * Full-body model shown on the Welcome screen, Idle mode, and as a
+ * backdrop on the Main Menu.
  *
- * >>> TO REPLACE WITH A REAL MODEL: see README section "Replacing
- * placeholder anatomy models with GLB/GLTF models" — load your GLB with
- * GLTFLoader and return the loaded scene from buildBodyModel() instead.
+ * loadBodyModel() loads the REAL full-body skin (BodyParts3D, CC BY-SA 2.1
+ * Japan -- see ATTRIBUTION.md; path from MODEL_MANIFEST.body) and renders it
+ * as the same translucent cyan "scan" ghost the placeholder used. If the
+ * GLB is missing or fails to load it logs an error and returns the
+ * procedural buildBodyModel() below, so the kiosk never shows a blank
+ * screen. buildBodyModel() is kept as that FALLBACK ONLY.
  * -----------------------------------------------------------------------
  */
 import * as THREE from "../../lib/three/three.module.min.js";
 import { baseMaterial, PALETTE, wireGhostMaterial } from "./materials.js";
+import { loadAnatomyModel } from "./ModelLoader.js";
+import { getModelInfo } from "../data/modelManifest.js";
 
+/** Async: real skin if available, otherwise the procedural placeholder. Never rejects. */
+export async function loadBodyModel() {
+  try {
+    const info = getModelInfo("body");
+    const model = await loadAnatomyModel(info.path, {
+      orient: info.orient,
+      targetSize: info.targetSize ?? 3.4,
+    });
+    // Fresh material per call: the viewer disposes models it swaps out.
+    const skinMat = baseMaterial(PALETTE.cyan, {
+      opacity: 0.26,
+      emissive: PALETTE.cyan,
+      emissiveIntensity: 0.18,
+      roughness: 0.6,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    model.traverse((obj) => {
+      if (obj.isMesh) obj.material = skinMat;
+    });
+    model.name = "BODY_MODEL_SKIN";
+    model.userData.rotationSpeed = 0.15;
+    return model;
+  } catch (err) {
+    console.error("[bodyModel] Real skin GLB failed to load, falling back to procedural placeholder:", err);
+    return buildBodyModel();
+  }
+}
+
+/** FALLBACK ONLY: primitive-built placeholder body, used when skin.glb fails to load. */
 export function buildBodyModel() {
   const group = new THREE.Group();
   group.name = "PLACEHOLDER_BODY_MODEL"; // clearly labeled placeholder per brief

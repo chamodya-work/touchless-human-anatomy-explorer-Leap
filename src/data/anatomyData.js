@@ -125,9 +125,10 @@ export const SYSTEMS = {
     simple:
       "Air travels down the windpipe into two spongy lungs, where oxygen passes into the blood and carbon dioxide passes out. Every structure visible here (aside from the diaphragm) is real, individually modeled anatomy.",
     // Categories from the real lungs.glb (87 meshes) -- see
-    // src/anatomy/lungClassifier.js. The diaphragm is a small procedural
-    // addition (see README/ATTRIBUTION) since it isn't part of this
-    // respiratory-system dataset.
+    // src/anatomy/lungClassifier.js. The diaphragm is a real BodyParts3D
+    // mesh (CC BY-SA 2.1 Japan) registered to these lungs -- not part of
+    // the HuBMAP respiratory dataset; a procedural disc is used only if
+    // diaphragm.glb is missing. See README/ATTRIBUTION.
     parts: [
       { id: "trachea", name: "Trachea", function: "The windpipe — carries air from the throat toward the lungs." },
       { id: "bronchi", name: "Bronchi", function: "The branching airway tree, down to small tubes inside each lobe of the lungs." },
@@ -230,9 +231,10 @@ export const SYSTEMS = {
     simple:
       "Food travels through a long tube that breaks it into nutrients your blood can carry to every cell, with the liver, gallbladder and pancreas adding digestive juices along the way.",
     // Categories from SIX real, separately-sourced GLB files loaded
-    // together -- see src/anatomy/digestiveClassifier.js. The stomach is
-    // a small procedural addition (this dataset doesn't include a
-    // stomach or esophagus model) -- see README/ATTRIBUTION.
+    // together, plus a real BodyParts3D stomach (CC BY-SA 2.1 Japan)
+    // registered to them -- see src/anatomy/digestiveClassifier.js. There
+    // is no esophagus. A procedural stomach is used only if stomach.glb
+    // is missing. See README/ATTRIBUTION.
     parts: [
       { id: "stomach", name: "Stomach", function: "Uses acid and muscle to break food down further." },
       { id: "duodenum", name: "Duodenum", function: "The first, short section of the small intestine, where bile and pancreatic juice join the food." },
@@ -267,6 +269,42 @@ export const SYSTEMS = {
       { id: "sacralSpine", name: "Sacral Spinal Cord", function: "The lowest section — controls the bladder, bowel and parts of the legs." },
     ],
   },
+  eye: {
+    id: "eye",
+    label: "EYE",
+    icon: "\u{1F441}\uFE0F",
+    summary: "Turns light into the pictures your brain sees",
+    name: "Eye",
+    function: "Focuses light onto the retina, which turns it into nerve signals for the brain.",
+    structures: ["Cornea", "Iris and pupil", "Lens", "Retina", "Vitreous jelly", "Optic nerve", "Eye muscles", "Tear system"],
+    fact: "Most of the eye's focusing is done by the clear cornea - roughly two-thirds of it - and the lens then fine-tunes the focus. The picture lands upside-down on the retina, and your brain flips it the right way up.",
+    simple:
+      "The eye works like a camera: the cornea and lens focus light, the iris controls how much gets in, and the retina turns the picture into nerve signals that travel to the brain along the optic nerve. Six small muscles aim the eye, and tears keep its surface clear.",
+    // 19 selectable parts grouped from the real Z-Anatomy eye meshes -- see
+    // src/anatomy/eyeClassifier.js. A procedural eye is used only if
+    // eye_globe.glb is missing. See README/ATTRIBUTION.
+    parts: [
+      { id: "sclera", name: "Sclera", function: "The tough white outer wall of the eyeball. It keeps the eye's shape and gives the eye muscles something firm to pull on." },
+      { id: "cornea", name: "Cornea", function: "The clear, dome-shaped window at the front. It does most of the eye's focusing and has no blood vessels, which helps it stay transparent." },
+      { id: "iris", name: "Iris", function: "The coloured ring of muscle. It makes the central opening (the pupil) smaller in bright light and larger in dim light." },
+      { id: "lens", name: "Lens", function: "A clear, flexible disc just behind the pupil. It changes shape to fine-tune focus between near and far objects." },
+      { id: "retina", name: "Retina", function: "The light-sensitive layer lining the back of the eye. Its rod and cone cells turn light into nerve signals." },
+      { id: "vitreous", name: "Vitreous Body", function: "A clear jelly that fills the large space behind the lens and helps the eyeball hold its round shape." },
+      { id: "aqueous", name: "Anterior Chamber", function: "The small fluid-filled space between the cornea and the iris. The fluid feeds the cornea and lens and carries away waste." },
+      { id: "zonules", name: "Zonular Fibres", function: "Tiny threads that hold the lens in place and tug on it to change its shape when you change focus." },
+      { id: "opticNerve", name: "Optic Nerve", function: "A cable of more than a million nerve fibres carrying signals from the retina to the visual areas of the brain." },
+      { id: "superiorRectus", name: "Superior Rectus", function: "Mainly turns the eye upward." },
+      { id: "inferiorRectus", name: "Inferior Rectus", function: "Mainly turns the eye downward." },
+      { id: "medialRectus", name: "Medial Rectus", function: "Turns the eye inward, toward the nose." },
+      { id: "lateralRectus", name: "Lateral Rectus", function: "Turns the eye outward, toward the ear." },
+      { id: "superiorOblique", name: "Superior Oblique", function: "Mainly turns the eye downward and outward. Its tendon loops through a tiny pulley at the top inner corner of the eye socket." },
+      { id: "inferiorOblique", name: "Inferior Oblique", function: "Mainly turns the eye upward and outward. It is the only eye muscle that does not start at the back of the eye socket." },
+      { id: "levator", name: "Levator Palpebrae Superioris", function: "Lifts the upper eyelid to open the eye." },
+      { id: "tendinousRing", name: "Common Tendinous Ring", function: "A ring of tough tissue at the back of the eye socket where four of the six eye muscles begin. The optic nerve passes through it." },
+      { id: "lacrimalGland", name: "Lacrimal Gland", function: "Makes the watery part of tears, which spread across the eye with every blink. It sits above and toward the outer corner of the eye." },
+      { id: "tearDrainage", name: "Tear Drainage Ducts", function: "Tears drain through tiny canals at the inner corner of the eyelids into a small sac, then down a duct into the nose - which is why crying gives you a runny nose." },
+    ],
+  },
 };
 
 export const SYSTEM_ORDER = [
@@ -277,6 +315,7 @@ export const SYSTEM_ORDER = [
   "muscles",
   "digestive",
   "nervous",
+  "eye",
 ];
 
 /**

@@ -6,14 +6,15 @@ tracking (with full mouse and keyboard fallback for development, testing
 and accessibility).
 
 Built with **Three.js + vanilla JavaScript (ES modules)** — no build step,
-no bundler. **All seven body systems use real, individually-named
+no bundler. **All eight body systems use real, individually-named
 anatomical 3D data**, from two legitimate, clearly-licensed sources —
-BodyParts3D/Z-Anatomy (Skeleton, Muscles) and the NIH-funded HuBMAP Human
+BodyParts3D/Z-Anatomy (Skeleton, Muscles, Eye) and the NIH-funded HuBMAP Human
 Reference Atlas (Heart, Lungs, Brain, Nervous System, Digestive System) —
-see `ATTRIBUTION.md` for full citations. A handful of small supplementary
-parts (the stomach, the diaphragm, the full-body silhouette on the
-welcome screen) remain procedural because they aren't part of either
-dataset; each is clearly labeled in code and disclosed in §7.
+see `ATTRIBUTION.md` for full citations. The stomach, the diaphragm and
+the full-body silhouette on the welcome screen are now real BodyParts3D
+meshes too (CC BY-SA 2.1 Japan; the stomach and diaphragm are registered
+into the HuBMAP coordinate frame, see §7). The old procedural versions
+are kept only as automatic fallbacks if a GLB is missing.
 
 > **This is an upgrade pass, not a rewrite.** See `CHANGELOG.md` for the
 > exact file-by-file diff from the previous build, and the "Honest
@@ -61,7 +62,7 @@ the server and opens the explorer full-screen in Chrome/Edge (run
 `Stop-Kiosk.bat` to stop it). See **`SETUP.md`** for the full
 multi-machine guide and the manual Python/Node steps above if preferred.
 
-**Note on file size:** this build includes real GLB assets for all seven
+**Note on file size:** this build includes real GLB assets for all eight
 systems — the two largest are `muscles.glb` (~24MB, 467 meshes) and
 `skeleton.glb` (~9.4MB). First load of each explorer will take a moment
 longer than a typical web page; `muscles.glb` specifically took up to
@@ -197,6 +198,11 @@ assets/models/
   small_intestine.glb   <- real duodenum/jejunum/ileum (HuBMAP, CC BY 4.0)
   large_intestine.glb   <- real colon/cecum/rectum (HuBMAP + Stony Brook University, CC BY 4.0)
   biliary_tree.glb      <- real bile duct network (HuBMAP, CC BY 4.0)
+  stomach.glb           <- real stomach, registered into the HuBMAP frame (BodyParts3D, CC BY-SA 2.1 JP)
+  diaphragm.glb         <- real diaphragm, registered to the HuBMAP lungs (BodyParts3D, CC BY-SA 2.1 JP)
+  skin.glb              <- full-body skin for Welcome/Menu/Idle (BodyParts3D, CC BY-SA 2.1 JP)
+  eye_globe.glb         <- real eyeball: sclera, cornea, iris, lens, retina, vitreous, aqueous, zonules (Z-Anatomy, CC BY-SA 4.0)
+  eye_orbit.glb         <- real eye muscles (6), levator, optic nerve, tendinous ring, tear apparatus (Z-Anatomy, CC BY-SA 4.0)
 ```
 
 Full licensing detail is in `ATTRIBUTION.md` (required reading before
@@ -206,21 +212,89 @@ CC BY 4.0, covering everything else, requires attribution only).
 `src/data/modelManifest.js` is the single source of truth for which
 systems use which files.
 
-**Not covered by either dataset:** a stomach and esophagus model, or
-peripheral nerves. A small, clearly-labeled procedural stomach is added
-alongside the six real digestive organs in `DigestiveExplorer.js`, and a
-procedural diaphragm is added alongside the real lungs in
-`LungExplorer.js`, so both explorers still show a complete system — see
-§8 for how to replace these last few procedural pieces, and §13 for the
-honest reasoning.
+**Supplementary BodyParts3D pieces.** The HuBMAP files have no stomach or
+diaphragm, so these come from BodyParts3D (FMA7148, FMA13295) as
+`assets/models/stomach.glb` and `diaphragm.glb`. They were pre-registered
+into the HuBMAP "united body" frame (metres, Y-up) by landmark and contact
+fitting against the HuBMAP liver (its gastric-impression and
+diaphragmatic-surface meshes), duodenum, pancreas and lungs, so they load
+as extra `optional` sources of the existing combined models and need no
+runtime alignment. Placement is **approximate** (two different bodies):
+the stomach touches the liver's gastric impression, abuts the duodenum and
+clears the pancreas; the diaphragm dome nests into the lung bases. The
+diaphragm's lower crural tails are trimmed to stay in frame. The full-body
+silhouette is BodyParts3D skin (FMA7163) decimated to 70k faces
+(`skin.glb`, raw BP3D space, `orient: "bp3d"`). **Still not modeled:** an
+esophagus and peripheral nerves.
+
+**The Eye system** (`EyeExplorer.js`) uses two Z-Anatomy files, both
+already centred on the globe's rotation centre (metres, Y-up, cornea facing
++Z) so the eye turns about its true centre. 19 structures are selectable
+(`eyeClassifier.js`). The five demo buttons, the live explanation and the
+model-source status sit in a rail on the left of the screen (so they never
+collide with the info panel or the gesture hint box). All demos are driven by
+the real meshes:
+
+- **Light Reflex** — the iris mesh is morphed radially (pupil ~2 mm ↔ ~6.4 mm,
+  outer ring fixed; the fibre pattern is shader-drawn from per-vertex polar
+  coordinates so it *stretches* with the pupil). A soft glow / dimming around
+  the eye signals the ambient light level.
+- **Focus Near / Far** — the eyeball is sliced through its centre (clipping
+  plane) with the orbit hidden, so you look into a half-eye: the lens thickens
+  ~28% and the zonular fibres shift inward while the lens glows.
+- **Eye Movement** — the globe rotates (±26° / ±20°) through its parent group;
+  muscles and optic nerve are skinned so their globe ends follow while the
+  orbital apex stays fixed; the working muscles glow and are named on screen.
+- **Tear Flow** — glossy droplets follow a curve through the real lacrimal
+  gland, across the eye, canaliculus, sac and nasolacrimal duct.
+- **See Inside** — sclera/cornea turn ghostly; lens, retina, vitreous and
+  aqueous become selectable. Shells and gel volumes lose picking ties by 10 mm
+  so the structure *inside* is chosen.
+
+*Camera behaviour.* AnatomyViewer auto-rotates models forever, which hides
+every one of these effects, so while a demo runs the explorer switches
+auto-rotate off, zooms in and glides to a view that shows the effect (front for
+pupil/gaze, medial side-on for the cut-away); the visitor may still drag after
+~2 s, and auto-rotate/zoom return when the demo ends.
+
+*Realism without textures* (the source meshes have no UVs): small GLSL patches
+add vessels to the sclera, tendon-to-belly colouring and fibre grain to the
+muscles, a fibrous iris with crypts / collarette / limbal ring and a vascular
+retina, all computed from object-space position; a procedural studio
+environment map (PMREM) supplies wet reflections; the cornea is rendered as
+additive glass. The vitreous fills the gap around the iris as a dark interior
+in the normal view.
+
+Not modeled: ciliary body, choroid, eyelids, trochlea. Left/right: the mesh is
+Z-Anatomy's `.r` set (patient's right eye, lateral = −X in the model frame).
+`eye_orbit.glb` is optional (eyeball-only mode); if `eye_globe.glb` fails, a
+labelled procedural eye is used. Because the animations edit vertex
+positions, the explorer clones geometry first and never mutates the loader's
+cache (the viewer's selection pulse uses `mesh.scale`, so scale is never
+animated here).
+
+**Fallbacks.** Each new GLB is optional in practice: if `stomach.glb` or
+`diaphragm.glb` is missing, the explorer logs a warning and adds the old
+procedural stomach/disc (tagged `isProcedural`, with a status line saying
+so); if `skin.glb` is missing, `loadBodyModel()` returns the procedural
+`PLACEHOLDER_BODY_MODEL`.
 
 ## 8. Replacing placeholder models with GLB/GLTF
 
-The only remaining procedural (non-real) pieces are the stomach
-(Digestive System), the diaphragm (Lungs), and the full-body silhouette
-on the Welcome/Menu/Idle screens. `src/components/SkeletonExplorer.js`
-is the reference pattern to follow for swapping any of them for a real
-GLB (e.g. if you later source a stomach model):
+No piece is procedural any more when all GLBs load: the stomach and
+diaphragm are real BodyParts3D meshes added as `optional` sources, and the
+body silhouette is real skin (`loadBodyModel()` in `bodyModel.js`). The
+`buildProcedural*` / `buildBodyModel()` functions remain as fallbacks only.
+`src/components/SkeletonExplorer.js` is the reference pattern for swapping
+any other piece for a real GLB:
+
+**Adding a supplementary part to a combined model** (how the stomach and
+diaphragm were done): register the mesh into the main dataset's frame
+offline, export a GLB with `orient: "none"`, then add
+`{ path, tag, optional: true }` to that system's `sources` in
+`modelManifest.js`, handle the tag in the classifier, and list it under
+`supplementary` so its credit shows in the info panel. If
+`model.userData.skippedSources` contains the tag, build your fallback.
 
 1. Place your GLB at the path already reserved in
    `src/data/modelManifest.js` (e.g. `assets/models/heart.glb`) and flip
@@ -415,6 +489,31 @@ where selecting one part of the heart or lungs visually highlighted the
 mesh instead of a clone. All four are fixed and covered by the
 screenshots/tests referenced in this repo's development history.
 
+**Eye system (added after the 7-system build).** Tested three ways.
+(1) Headless Node + jsdom with the real GLBs and the real `EyeExplorer`
+(43 checks): all 21 meshes classify into 19 part ids; pupil ~1.0 → 3.2 mm with
+the outer iris ring fixed; lens thickens and glows only while focusing (and
+starts with no emissive); gaze reaches −26° / +22° / 20° with muscle insertions
+following, the orbital apex fixed, and exact return to rest; tears stay finite;
+See Inside swaps the selectable set; real raycasts pick pupil → lens, iris,
+cornea at the periphery; the view-gliding, zoom, ambient overlay, focus
+cut-away and orbit hiding behave; eyeball-only mode and the procedural fallback
+run error-free; English and Sinhala strings are complete. (2) **A real
+Chromium (Electron under Xvfb, software WebGL) driving the real app**: all
+eight systems mount their real models with zero console errors; every eye demo
+was run and screenshotted; a real mouse click on the pupil selects the Lens and
+fills the info panel. (3) The two fixes that only a real browser exposed are
+covered above (auto-rotate fighting the demos; tear particles at ~0.1 px
+because `Points.size` ignores the model scale) plus a lens emissive that
+flashed blue on entry. **Not tested:** a GPU / the kiosk machine's frame rate
+(software rendering ran ~3–10 fps, and the viewer clamps frame time to 0.1 s,
+so on a slow machine below ~10 fps all animations run in slow motion),
+dwell-selection with a real Leap Motion on the 5-button rail, and the Sinhala
+wording, which was written for this build and should be checked by a fluent
+speaker. The other seven systems are unchanged apart from sharing the new
+wiring; their organs are still single-colour meshes (the eye's shader/env
+treatment was not applied to them).
+
 **NOT tested — because real LM-010 hardware was not available in this
 build environment:**
 - The actual Ultraleap WebSocket frame shape from a live device/bridge. `_handleFrame()`'s parsing (palm/index-finger extraction, `pinchStrength` vs. `pinchDistance` handling) is written defensively against the documented/likely shapes but has not been exercised against a real frame. **Run §11's manual test pass on-site before the exhibition opens.**
@@ -425,10 +524,14 @@ build environment:**
 data.** Skeleton and Muscles use BodyParts3D/Z-Anatomy (CC BY-SA). Heart,
 Lungs, Brain, Nervous System, and Digestive System use the NIH-funded
 HuBMAP Human Reference Atlas (CC BY 4.0), including the Allen Institute's
-mapped human brain. Three small pieces remain procedural because neither
-dataset includes them: the stomach, the diaphragm, and the full-body
-silhouette on the welcome/menu screens — each is clearly labeled
-`isProcedural`/commented in code. One tempting shortcut was deliberately
+mapped human brain. The stomach, the diaphragm and the welcome-screen
+body are real BodyParts3D meshes (CC BY-SA 2.1 Japan). The stomach and
+diaphragm are *approximately* registered into the HuBMAP frame (different
+source bodies, so expect plausible rather than exact fit); the loader,
+fallback and classification logic were tested headlessly in Node, but the
+**visual look in a real browser (skin opacity, diaphragm/stomach overlap
+with neighbours, framing while auto-rotating) has not been checked on
+hardware — review each on-site.** One tempting shortcut was deliberately
 *not* taken earlier in this project: a GitHub repo offering pre-packaged
 organ GLBs under a claimed MIT license was found and inspected, but its
 README didn't document where the meshes themselves originally came from

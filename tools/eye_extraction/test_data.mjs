@@ -1,0 +1,18 @@
+import fs from "node:fs";
+import { JSDOM } from "/home/claude/testenv/node_modules/jsdom/lib/api.js";
+const dom=new JSDOM("<!doctype html>",{url:"http://localhost/"});for(const k of ["window","document","localStorage"])Object.defineProperty(globalThis,k,{value:dom.window[k],configurable:true});
+const R="/home/claude/touchless-human-anatomy-explorer-Leap/";
+const {SYSTEMS,SYSTEM_ORDER,getSystem}=await import(R+"src/data/anatomyData.js");
+const {SI_SYSTEMS}=await import(R+"src/data/anatomyData.si.js");
+const {UI_STRINGS}=await import(R+"src/data/uiStrings.js");
+const {classifyEyePart}=await import(R+"src/anatomy/eyeClassifier.js");
+const {getModelInfo}=await import(R+"src/data/modelManifest.js");
+console.log("order:",SYSTEM_ORDER.join(","));
+const en=getSystem("eye","en"),si=getSystem("eye","si");
+const ids=en.parts.map(p=>p.id);console.log("parts",ids.length);
+let bad=0;ids.forEach(id=>{const p=si.parts.find(x=>x.id===id);if(!p||p.name===en.parts.find(x=>x.id===id).name||!/[\u0D80-\u0DFF]/.test(p.name+p.function)){console.log("SI missing/untranslated:",id);bad++}});
+console.log("SI parts translated:",ids.length-bad,"/",ids.length,"| label",si.label,"| summary has Sinhala:",/[\u0D80-\u0DFF]/.test(si.summary));
+const keys=Object.keys(UI_STRINGS.en).filter(k=>/Eye/.test(k));const miss=keys.filter(k=>!(k in UI_STRINGS.si));console.log("eye UI keys",keys.length,"missing in si:",miss);
+const names=["sclera","cornea","iris","lens","retina","vitreous_body","anterior_chamber","zonular_fibres","optic_nerve","superior_rectus","inferior_rectus","medial_rectus","lateral_rectus","superior_oblique","inferior_oblique","levator_palpebrae_superioris","common_tendinous_ring","lacrimal_gland","lacrimal_canaliculus","lacrimal_sac","nasolacrimal_duct"];
+const got=new Set(names.map(classifyEyePart));console.log("classifier covers all part ids:",ids.every(i=>got.has(i)),"; unknown ids from classifier:",[...got].filter(i=>!ids.includes(i)));
+console.log("manifest",JSON.stringify(getModelInfo("eye").sources.map(s=>s.tag+(s.optional?"?":""))),"icon",en.icon);

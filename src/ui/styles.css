@@ -762,3 +762,37 @@ html, body {
 /* ---------------------------- Scrollbar (info panel) ------------------------ */
 .info-panel::-webkit-scrollbar { width: 6px; }
 .info-panel::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 4px; }
+
+/* ---- Eye explorer: demo buttons in a left rail + in-flow explainer ---- */
+.eye-rail {
+  position: fixed;
+  left: 34px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 232px;
+}
+.eye-rail .mode-toggle {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 13px 20px;
+  font-size: 0.98rem;
+}
+.eye-rail .mode-toggle__icon { font-size: 1.2rem; }
+.eye-rail .eye-explainer {
+  margin: 6px 4px 0;
+  min-height: 7em;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.42;
+  text-align: left;
+}
+.eye-rail .eye-status {
+  margin: 4px 4px 0;
+  font-size: 0.74rem;
+  text-align: left;
+  opacity: 0.8;
+}

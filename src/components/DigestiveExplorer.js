@@ -5,12 +5,13 @@
  * duodenum, small/large intestine and the bile duct network.
  *
  * Loads SIX real, separately-sourced GLB files (HuBMAP Human Reference
- * Atlas, CC BY 4.0 -- see ATTRIBUTION.md) combined into one scene via
- * ModelLoader.loadCombinedAnatomyModel(), which preserves their real
- * relative anatomical positions. A small procedural stomach is added
- * (this dataset doesn't include one) -- see README/ATTRIBUTION. Falls
- * back entirely to the procedural placeholder if the real GLBs are
- * missing or fail to load.
+ * Atlas, CC BY 4.0 -- see ATTRIBUTION.md) plus a real BodyParts3D stomach
+ * (CC BY-SA 2.1 Japan, pre-registered into the same frame) combined into
+ * one scene via ModelLoader.loadCombinedAnatomyModel(), which preserves
+ * their relative anatomical positions. The stomach is an OPTIONAL source:
+ * if stomach.glb is missing, a small procedural stomach is used instead.
+ * Falls back entirely to the procedural placeholder if the six core GLBs
+ * are missing or fail to load.
  * -----------------------------------------------------------------------
  */
 import * as THREE from "../../lib/three/three.module.min.js";
@@ -22,6 +23,7 @@ import { getSystem } from "../data/anatomyData.js";
 import { t, getLang, onLanguageChange } from "../data/i18n.js";
 
 const PART_COLORS = {
+  stomach: 0xc47a6a,
   liver: 0x8a4a3d,
   gallbladder: 0x4a7a4a,
   pancreas: 0xd4a24c,
@@ -39,8 +41,9 @@ function materialFor(partId) {
   });
 }
 
-/** Small procedural stomach -- not part of this dataset. Positioned near
- *  the liver/duodenum junction using their real combined-space centers. */
+/** FALLBACK ONLY: small procedural stomach, used when stomach.glb is
+ *  missing. Positioned near the liver/duodenum junction using their real
+ *  combined-space centers. */
 function buildProceduralStomach(anchor, scale) {
   const geo = new THREE.SphereGeometry(1, 24, 24);
   const pos = geo.attributes.position;
@@ -70,6 +73,7 @@ export class DigestiveExplorer {
     this.controlsRoot = controlsRoot;
     this.system = getSystem("digestive", getLang());
     this._usedRealModel = false;
+    this._usedRealStomach = false;
     this._langUnsub = null;
   }
 
@@ -105,16 +109,22 @@ export class DigestiveExplorer {
         }
       });
 
-      // Place the procedural stomach near the liver/duodenum junction --
-      // a reasonable anatomical neighbor given real data for both.
-      const liverCenter = avg(centersByTag.liver);
-      const duodenumCenter = avg(centersByTag.smallIntestine);
-      if (liverCenter && duodenumCenter) {
-        const anchor = liverCenter.clone().lerp(duodenumCenter, 0.5);
-        anchor.y += 0.15;
-        const stomach = buildProceduralStomach(anchor, 0.35);
-        model.add(stomach);
-        selectable.push(stomach);
+      // Real stomach arrives as the optional "stomach" source. Only if it
+      // is absent do we add the procedural stand-in near the liver/
+      // duodenum junction -- a reasonable anatomical neighbor given real
+      // data for both.
+      const hasRealStomach = !!centersByTag.stomach?.length;
+      this._usedRealStomach = hasRealStomach;
+      if (!hasRealStomach) {
+        const liverCenter = avg(centersByTag.liver);
+        const duodenumCenter = avg(centersByTag.smallIntestine);
+        if (liverCenter && duodenumCenter) {
+          const anchor = liverCenter.clone().lerp(duodenumCenter, 0.5);
+          anchor.y += 0.15;
+          const stomach = buildProceduralStomach(anchor, 0.35);
+          model.add(stomach);
+          selectable.push(stomach);
+        }
       }
 
       model.userData.selectableParts = selectable;
@@ -156,7 +166,13 @@ export class DigestiveExplorer {
   _renderStatus() {
     this.controlsRoot.innerHTML = `<p class="model-status${
       this._usedRealModel ? "" : " model-status--fallback"
-    }">${this._usedRealModel ? t("statusDigestive") : t("modelPlaceholder")}</p>`;
+    }">${
+      !this._usedRealModel
+        ? t("modelPlaceholder")
+        : this._usedRealStomach
+        ? t("statusDigestive")
+        : t("statusDigestiveNoStomach")
+    }</p>`;
   }
 
   unmount() {

@@ -484,6 +484,17 @@ export class AnatomyViewer {
       this._fpsAccum = 0;
     }
 
+    // A suspended interaction is a true visual pause: keep the current
+    // model, selection, camera and animation frame exactly where they are.
+    // Pointer/pinch events are already ignored by the gesture handlers above;
+    // this guard additionally freezes model transitions, auto-rotation,
+    // selection pulse, particles and explorer-specific onFrame animations.
+    // Rendering continues so the paused scene remains visible and crisp.
+    if (this.interactionSuspended) {
+      this.renderer.render(this.scene, this.camera);
+      return;
+    }
+
     if (this._transition) this._updateTransition(dt);
 
     // Dwell-to-select for the 3D parts. Frame-driven (rather than a DOM
