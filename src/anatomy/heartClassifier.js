@@ -23,8 +23,12 @@ const RULES = [
   // Vasculature (heart_vessels.glb)
   { id: "coronaryArteries", test: (n) => /coronary_artery|marginal_artery|marginal_branch|descending_artery|descending_branch|cardiac_artery/.test(n) },
   { id: "aorta", test: (n) => n.includes("aorta") || n.includes("brachiocephalic_artery") || n.includes("carotid_artery") || n.includes("subclavian_artery") },
-  { id: "pulmonaryVessels", test: (n) => n.includes("pulmonary_artery") || n.includes("pulmonary_trunk") || n.includes("pulmonary_vein") },
-  { id: "venaCava", test: (n) => n.includes("vena_cava") || n.includes("brachiocephalic_vein") },
+  { id: "pulmonaryTrunk", test: (n) => n.includes("pulmonary_trunk") },
+  { id: "pulmonaryArteries", test: (n) => n.includes("pulmonary_artery") },
+  { id: "pulmonaryVeins", test: (n) => n.includes("pulmonary_vein") },
+  { id: "superiorVenaCava", test: (n) => n.includes("superior_vena_cava") || n.includes("brachiocephalic_vein") },
+  { id: "inferiorVenaCava", test: (n) => n.includes("inferior_vena_cava") },
+  { id: "superiorVenaCava", test: (n) => n.includes("vena_cava") }, // generic wrapper fallback
   { id: "cardiacVeins", test: (n) => /cardiac_vein|coronary_sinus/.test(n) },
 ];
 

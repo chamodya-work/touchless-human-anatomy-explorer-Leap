@@ -183,3 +183,11 @@ Procedural stand-ins for the stomach (`buildProceduralStomach()` in
 BodyParts3D GLB above is missing or fails to load. They contain no
 third-party data and are not real anatomical scans; the UI then shows the
 non-real status text.
+
+---
+
+## Sacrum and Coccyx (added to `assets/models/skeleton.glb`)
+
+- **Source data:** BodyParts3D FMA16202 (sacrum, which includes the coccyx), (c) DBCLS, release 3.0, via https://github.com/Kevin-Mattheus-Moerman/BodyParts3D
+- **License:** CC BY-SA 2.1 Japan
+- **Changes made:** split at the sacrococcygeal neck into two meshes ("sacrum", "coccyx"), decimated, scaled 2% and translated to fit the existing skeleton's pelvis, smooth normals recomputed. Placement is approximate.

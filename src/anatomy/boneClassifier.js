@@ -23,6 +23,10 @@ const RULES = [
   { id: "ribs", test: (n) => n.includes("rib") },
   { id: "spine", test: (n) => n.includes("vertebra") || n === "atlas" || n === "axis" },
   { id: "pelvis", test: (n) => n.includes("hip bone") },
+  // Sacrum and coccyx (added later from BodyParts3D FMA16202, split at the
+  // narrow sacrococcygeal neck -- see ATTRIBUTION.md)
+  { id: "sacrum", test: (n) => n === "sacrum" },
+  { id: "coccyx", test: (n) => n === "coccyx" },
   { id: "clavicle", test: (n) => n.includes("clavicle") },
   { id: "scapula", test: (n) => n.includes("scapula") },
   { id: "humerus", test: (n) => n.includes("humerus") },
@@ -32,20 +36,14 @@ const RULES = [
   { id: "patella", test: (n) => n.includes("patella") },
   { id: "tibia", test: (n) => n.includes("tibia") },
   { id: "fibula", test: (n) => n.includes("fibula") },
-  // Hands: carpals, metacarpals, finger/thumb phalanges
-  {
-    id: "hands",
-    test: (n) =>
-      /capitate|hamate|lunate|scaphoid|trapezium|trapezoid|pisiform|metacarpal/.test(n) ||
-      (/phalanx/.test(n) && /(finger|thumb)/.test(n)),
-  },
-  // Feet: tarsals, metatarsals, toe phalanges, sesamoids of foot
-  {
-    id: "feet",
-    test: (n) =>
-      /calcaneus|talus|cuboid bone|cuneiform bone|navicular bone|metatarsal|sesamoid bone of (left|right) foot/.test(n) ||
-      (/phalanx/.test(n) && /toe/.test(n)),
-  },
+  // Hands: carpals, metacarpals, finger/thumb phalanges (3 separate groups)
+  { id: "handMetacarpals", test: (n) => /metacarpal/.test(n) },
+  { id: "handPhalanges", test: (n) => /phalanx/.test(n) && /(finger|thumb)/.test(n) },
+  { id: "handCarpals", test: (n) => /capitate|hamate|lunate|scaphoid|trapezium|trapezoid|pisiform|triquetr/.test(n) },
+  // Feet: tarsals (incl. foot sesamoids), metatarsals, toe phalanges
+  { id: "footMetatarsals", test: (n) => /metatarsal/.test(n) && !/sesamoid/.test(n) },
+  { id: "footPhalanges", test: (n) => /phalanx/.test(n) && /toe/.test(n) },
+  { id: "footTarsals", test: (n) => /calcaneus|talus|cuboid bone|cuneiform bone|navicular bone|sesamoid bone of (left|right) foot/.test(n) },
 ];
 
 /**

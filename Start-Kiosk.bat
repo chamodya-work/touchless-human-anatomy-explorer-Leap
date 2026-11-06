@@ -21,7 +21,7 @@ setlocal EnableExtensions
 cd /d "%~dp0"
 
 REM ---- Settings -------------------------------------------------------
-set "PORT=8080"
+set "PORT=8081"
 set "URL=http://localhost:%PORT%/"
 REM ---------------------------------------------------------------------
 

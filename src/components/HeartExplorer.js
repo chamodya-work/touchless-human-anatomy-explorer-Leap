@@ -27,7 +27,15 @@ const VEIN_MATERIAL = new THREE.MeshStandardMaterial({ color: 0x3a4fb0, roughnes
 
 function materialFor(partId) {
   if (partId === "aorta" || partId === "coronaryArteries") return VESSEL_MATERIAL.clone();
-  if (partId === "venaCava" || partId === "pulmonaryVessels") return VEIN_MATERIAL.clone();
+  if (
+    partId === "superiorVenaCava" ||
+    partId === "inferiorVenaCava" ||
+    partId === "pulmonaryTrunk" ||
+    partId === "pulmonaryArteries" ||
+    partId === "pulmonaryVeins"
+  ) {
+    return VEIN_MATERIAL.clone();
+  }
   return TISSUE_MATERIAL.clone();
 }
 
@@ -264,8 +272,12 @@ function buildWaypointsFromCenters(centersByPart, model) {
   const leftAtrium = avg(centersByPart.leftAtrium);
   const leftVentricle = avg(centersByPart.leftVentricle);
   const aorta = avg(centersByPart.aorta);
-  const venaCava = avg(centersByPart.venaCava);
-  const pulmonary = avg(centersByPart.pulmonaryVessels);
+  const venaCava = avg([...(centersByPart.superiorVenaCava || []), ...(centersByPart.inferiorVenaCava || [])]);
+  const pulmonary = avg([
+    ...(centersByPart.pulmonaryTrunk || []),
+    ...(centersByPart.pulmonaryArteries || []),
+    ...(centersByPart.pulmonaryVeins || []),
+  ]);
 
   if (!rightAtrium || !rightVentricle || !leftAtrium || !leftVentricle || !aorta) {
     return {}; // incomplete -- caller will skip the animation
