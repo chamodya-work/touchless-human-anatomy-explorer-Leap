@@ -142,20 +142,6 @@ export const MODEL_MANIFEST = {
     attributionUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
     notes: "Real-scale eye from Z-Anatomy: sclera, cornea, iris, lens, retina, vitreous, anterior chamber, zonular fibres, six eye muscles, levator, optic nerve and tear apparatus. Ciliary body/choroid/eyelids are not modeled. Falls back to a procedural placeholder eye if eye_globe.glb fails to load.",
   },
-  nervous: {
-    type: "glb-combined",
-    sources: [
-      { path: "assets/models/brain.glb", tag: "brain" },
-      { path: "assets/models/spinal_cord.glb", tag: "spinalCord" },
-    ],
-    orient: "none",
-    meshCount: 316,
-    source: "HuBMAP Human Reference Atlas (Visible Human Male + Allen brain)",
-    license: "CC BY 4.0",
-    attribution: "HuBMAP Consortium, Human Reference Atlas 3D Reference Object Library",
-    attributionUrl: "https://creativecommons.org/licenses/by/4.0/",
-    notes: "Peripheral nerves are not part of this dataset.",
-  },
   digestive: {
     type: "glb-combined",
     sources: [

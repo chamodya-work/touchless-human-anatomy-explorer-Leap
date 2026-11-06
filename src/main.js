@@ -38,7 +38,6 @@ import { EyeExplorer } from "./components/EyeExplorer.js";
 import { SkeletonExplorer } from "./components/SkeletonExplorer.js";
 import { MusclesExplorer } from "./components/MusclesExplorer.js";
 import { DigestiveExplorer } from "./components/DigestiveExplorer.js";
-import { NervousExplorer } from "./components/NervousExplorer.js";
 import { GenericExplorer } from "./components/GenericExplorer.js";
 
 import { loadBodyModel } from "./anatomy/bodyModel.js";
@@ -356,9 +355,6 @@ class App {
         break;
       case "digestive":
         explorer = new DigestiveExplorer(deps);
-        break;
-      case "nervous":
-        explorer = new NervousExplorer(deps);
         break;
       default:
         explorer = new GenericExplorer(deps, getSystem(systemId, getLang()));

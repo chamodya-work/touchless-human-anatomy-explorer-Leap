@@ -18,7 +18,6 @@ import { baseMaterial, PALETTE } from "./materials.js";
 const COLOR_BY_SYSTEM = {
   muscles: 0xd9584f,
   digestive: 0xd4a24c,
-  nervous: 0x7ce0ff,
 };
 
 export function buildGenericSystemModel(systemId, parts) {

@@ -391,3 +391,12 @@ extended in place.
 - **Open palm behavior changed on purpose.** It used to immediately call the same code path as the Back button (reset to menu, resetting camera/rotation/selection along the way). It now shows a small "Interaction Paused" toast for 1.5s and does nothing else. Returning to the menu is done via the on-screen Back button (point + pinch), which was always available and unaffected by this change.
 - **Tracking loss no longer touches app state.** Losing the hand (briefly, or for a while) suspends pointer/pinch input and shows "Hand not detected — interaction paused" in the HUD; the current explorer, camera angle, selection, and any running animation (Blood Flow, etc.) are left exactly as they were.
 - **Skeleton and Muscles now show real anatomy.** Every other system menu button (Heart, Brain, Lungs, Digestive System, Nervous System) is unchanged in kind — still procedural placeholders — see ATTRIBUTION.md and the README for why, and what to do about it.
+
+## Supervisor feedback fixes
+- Brain: removed the Brain Activity button; corrected Sinhala lobe names.
+- Nervous system removed (menu, explorer, data, spinal_cord.glb).
+- Heart: separate superior/inferior vena cava, pulmonary trunk/arteries/veins; "සංස්ථානික" dropped.
+- Lungs: trachea renamed ශ්වාස නාලිකා (bronchi: ශ්වසනි).
+- Skeleton: added sacrum and coccyx; hand/foot bones split into carpals/metacarpals/phalanges (and foot equivalents); pelvis and patella wording fixed.
+- Digestive: stomach/intestine descriptions updated; rectum is its own part.
+- Eye: iris -> තාරා මණ්ඩලය, vitreous -> කාච රසය, external eye muscles label.

@@ -52,6 +52,7 @@ export function classifyDigestivePart(rawName, sourceTag) {
 
   if (sourceTag === "largeIntestine") {
     if (n === "vh_m_colon") return null;
+    if (n.includes("rectum")) return "rectum";
     return "largeIntestine"; // ascending/transverse/descending/sigmoid colon, cecum, rectum, appendix
   }
 

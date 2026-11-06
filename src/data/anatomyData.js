@@ -98,8 +98,11 @@ export const SYSTEMS = {
       { id: "aorticValve", name: "Aortic Valve", function: "Controls blood leaving the left ventricle into the aorta." },
       { id: "pulmonaryValve", name: "Pulmonary Valve", function: "Controls blood leaving the right ventricle toward the lungs." },
       { id: "aorta", name: "Aorta", function: "The body's largest artery, carrying oxygen-rich blood away from the heart." },
-      { id: "pulmonaryVessels", name: "Pulmonary Vessels", function: "Carry blood between the heart and lungs to pick up oxygen." },
-      { id: "venaCava", name: "Vena Cava", function: "The body's largest veins, returning oxygen-poor blood to the heart." },
+      { id: "pulmonaryTrunk", name: "Pulmonary Trunk", function: "The large artery that carries oxygen-poor blood from the right ventricle toward the lungs." },
+      { id: "pulmonaryArteries", name: "Pulmonary Arteries", function: "Carry oxygen-poor blood from the pulmonary trunk to the left and right lungs." },
+      { id: "pulmonaryVeins", name: "Pulmonary Veins", function: "Carry oxygen-rich blood from the lungs back to the left atrium." },
+      { id: "superiorVenaCava", name: "Superior Vena Cava", function: "The large vein that returns oxygen-poor blood from the head, neck and arms to the heart." },
+      { id: "inferiorVenaCava", name: "Inferior Vena Cava", function: "The body's largest vein, returning oxygen-poor blood from the lower body to the heart." },
       { id: "coronaryArteries", name: "Coronary Arteries", function: "Supply the heart muscle itself with oxygen-rich blood." },
     ],
     // Order used to animate the blood flow particle path
@@ -149,12 +152,13 @@ export const SYSTEMS = {
       "Spine",
       "Ribs",
       "Pelvis",
+      "Sacrum & Coccyx",
       "Clavicle & Scapula",
       "Arm bones",
       "Leg bones",
       "Hands & Feet",
     ],
-    fact: "This model shows 202 real, individually modeled bones — the same number of major named bones used in medical reference anatomy.",
+    fact: "This model shows 203 real, individually modeled bones, including the sacrum and coccyx at the base of the spine.",
     simple:
       "The skeleton is a living framework of bones, joints and connective tissue that gives your body shape and lets you move. Every bone visible here is a real, individually named anatomical structure — point at any one of them to learn what it does.",
     // 17 categories that the real skeleton.glb's 202 individually-named
@@ -177,8 +181,14 @@ export const SYSTEMS = {
       { id: "patella", name: "Patella (Kneecap)", function: "A small bone embedded in the tendon at the front of the knee, protecting the joint." },
       { id: "tibia", name: "Tibia", function: "The shin bone — bears most of the leg's weight." },
       { id: "fibula", name: "Fibula", function: "The thinner lower-leg bone, aids ankle stability." },
-      { id: "hands", name: "Hand Bones", function: "27 small bones per hand — carpals, metacarpals and finger phalanges — giving the hand fine dexterity." },
-      { id: "feet", name: "Foot Bones", function: "26 small bones per foot — tarsals, metatarsals and toe phalanges — supporting weight and balance." },
+      { id: "sacrum", name: "Sacrum", function: "Five fused vertebrae forming the wedge-shaped back of the pelvis; it transfers the weight of the spine to the hips." },
+      { id: "coccyx", name: "Coccyx (Tailbone)", function: "The small, fused tail end of the spine; an anchor point for pelvic-floor muscles and ligaments." },
+      { id: "handCarpals", name: "Carpals (Wrist Bones)", function: "27 small bones per hand — carpals, metacarpals and finger phalanges — giving the hand fine dexterity." },
+      { id: "handMetacarpals", name: "Metacarpals (Palm Bones)", function: "27 small bones per hand — carpals, metacarpals and finger phalanges — giving the hand fine dexterity." },
+      { id: "handPhalanges", name: "Finger Bones (Phalanges)", function: "27 small bones per hand — carpals, metacarpals and finger phalanges — giving the hand fine dexterity." },
+      { id: "footTarsals", name: "Tarsals (Ankle & Heel Bones)", function: "26 small bones per foot — tarsals, metatarsals and toe phalanges — supporting weight and balance." },
+      { id: "footMetatarsals", name: "Metatarsals (Foot Bones)", function: "26 small bones per foot — tarsals, metatarsals and toe phalanges — supporting weight and balance." },
+      { id: "footPhalanges", name: "Toe Bones (Phalanges)", function: "26 small bones per foot — tarsals, metatarsals and toe phalanges — supporting weight and balance." },
     ],
   },
   muscles: {
@@ -239,34 +249,12 @@ export const SYSTEMS = {
       { id: "stomach", name: "Stomach", function: "Uses acid and muscle to break food down further." },
       { id: "duodenum", name: "Duodenum", function: "The first, short section of the small intestine, where bile and pancreatic juice join the food." },
       { id: "smallIntestine", name: "Small Intestine", function: "The jejunum and ileum — absorb most nutrients into the bloodstream." },
-      { id: "largeIntestine", name: "Large Intestine", function: "Absorbs water and forms solid waste, including the appendix and rectum." },
+      { id: "largeIntestine", name: "Large Intestine", function: "Absorbs water and forms solid waste." },
+      { id: "rectum", name: "Rectum", function: "Temporarily stores faeces before they leave the body." },
       { id: "liver", name: "Liver", function: "Filters blood and produces bile to digest fat." },
       { id: "gallbladder", name: "Gallbladder", function: "Stores and concentrates bile produced by the liver." },
       { id: "pancreas", name: "Pancreas", function: "Produces enzymes and insulin to regulate digestion and blood sugar." },
       { id: "bileDucts", name: "Bile Duct Network", function: "Carries bile from the liver and gallbladder, and digestive enzymes from the pancreas, into the duodenum." },
-    ],
-  },
-  nervous: {
-    id: "nervous",
-    label: "NERVOUS SYSTEM",
-    icon: "⚡",
-    summary: "The body's electrical communication network",
-    name: "Nervous System",
-    function: "Carries electrical signals between the brain, spinal cord and body.",
-    structures: ["Brain", "Cervical spinal cord", "Thoracic spinal cord", "Lumbar spinal cord", "Sacral spinal cord"],
-    fact: "This model combines the same real Allen Institute–mapped brain used in the Brain explorer with a real, individually-segmented human spinal cord — all 31 segments, from the neck down to the tailbone.",
-    simple:
-      "Neurons pass tiny electrical signals to each other, letting your brain sense the world and control your muscles almost instantly. The brain and spinal cord together form the body's central command line.",
-    // Brain (reused from brain.glb) + real spinal_cord.glb (30 segments,
-    // grouped into 4 spinal regions) -- see
-    // src/anatomy/spinalCordClassifier.js. Peripheral nerves are not
-    // part of this dataset -- see README/ATTRIBUTION.
-    parts: [
-      { id: "brainCore", name: "Brain", function: "Processes and originates most nerve signals." },
-      { id: "cervicalSpine", name: "Cervical Spinal Cord", function: "The topmost section, in the neck — carries signals to and from the arms and head." },
-      { id: "thoracicSpine", name: "Thoracic Spinal Cord", function: "The mid-back section — carries signals to and from the chest and abdomen." },
-      { id: "lumbarSpine", name: "Lumbar Spinal Cord", function: "The lower-back section — carries signals to and from the legs." },
-      { id: "sacralSpine", name: "Sacral Spinal Cord", function: "The lowest section — controls the bladder, bowel and parts of the legs." },
     ],
   },
   eye: {
@@ -314,7 +302,6 @@ export const SYSTEM_ORDER = [
   "skeleton",
   "muscles",
   "digestive",
-  "nervous",
   "eye",
 ];
 
