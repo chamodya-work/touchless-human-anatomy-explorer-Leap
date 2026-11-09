@@ -51,7 +51,9 @@ const RULES = [
  * @returns {string} a partId from anatomyData.js SYSTEMS.skeleton.parts, or "other"
  */
 export function classifyBone(rawName) {
-  const n = (rawName || "").toLowerCase().trim();
+  // three.js GLTFLoader turns spaces in node names into underscores
+  // ("left hip bone" -> "left_hip_bone"), so normalise before matching.
+  const n = (rawName || "").toLowerCase().replace(/_+/g, " ").trim();
   for (const rule of RULES) {
     if (rule.test(n)) return rule.id;
   }
