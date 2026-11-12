@@ -3,7 +3,7 @@
  * -----------------------------------------------------------------------
  * Language state for the Touchless Human Anatomy Explorer.
  *
- * English is the default; Sinhala (සිංහල) is the alternate. The visitor's
+ * English is the default; Sinhala (සිංහල) and Tamil (தமிழ்) are the alternates. The visitor's
  * choice is held in exactly one place and broadcast to every component
  * through onLanguageChange(), so a single tap on the main-page language
  * button re-renders the menu, the information panel and every HUD label.
@@ -11,8 +11,9 @@
  * Where the two languages live:
  *   - UI chrome strings  -> uiStrings.js   (menus, headings, HUD, toggles)
  *   - anatomy content    -> anatomyData.js (English base)
- *                           anatomyData.si.js (Sinhala overlay, merged by
- *                           getSystem(id, getLang()))
+ *                           anatomyData.si.js (Sinhala overlay) and
+ *                           anatomyData.ta.js (Tamil overlay), merged by
+ *                           getSystem(id, getLang())
  * -----------------------------------------------------------------------
  */
 import { SHARED_STRINGS, UI_STRINGS } from "./uiStrings.js";
@@ -20,9 +21,10 @@ import { SHARED_STRINGS, UI_STRINGS } from "./uiStrings.js";
 export const LANGUAGES = {
   en: { id: "en", nativeLabel: "English", htmlLang: "en" },
   si: { id: "si", nativeLabel: "සිංහල", htmlLang: "si" },
+  ta: { id: "ta", nativeLabel: "தமிழ்", htmlLang: "ta" },
 };
 
-export const LANGUAGE_ORDER = ["en", "si"];
+export const LANGUAGE_ORDER = ["en", "si", "ta"];
 export const DEFAULT_LANGUAGE = "en";
 
 const STORAGE_KEY = "anatomyExplorer.language";
@@ -30,7 +32,7 @@ const STORAGE_KEY = "anatomyExplorer.language";
 let currentLanguage = DEFAULT_LANGUAGE;
 const listeners = new Set();
 
-/** @returns {"en"|"si"} the language currently being displayed. */
+/** @returns {"en"|"si"|"ta"} the language currently being displayed. */
 export function getLang() {
   return currentLanguage;
 }
@@ -38,6 +40,11 @@ export function getLang() {
 /** Convenience helper for the many `lang === "si"` checks. */
 export function isSinhala() {
   return currentLanguage === "si";
+}
+
+/** Convenience helper for `lang === "ta"` checks. */
+export function isTamil() {
+  return currentLanguage === "ta";
 }
 
 /**
@@ -120,7 +127,9 @@ function persist(id) {
 
 function detectFromNavigator() {
   const nav = (navigator.languages?.[0] || navigator.language || "").toLowerCase();
-  return nav.startsWith("si") ? "si" : DEFAULT_LANGUAGE;
+  if (nav.startsWith("si")) return "si";
+  if (nav.startsWith("ta")) return "ta";
+  return DEFAULT_LANGUAGE;
 }
 
 function applyDocumentLanguage() {

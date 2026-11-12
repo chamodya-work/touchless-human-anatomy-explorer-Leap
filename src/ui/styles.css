@@ -16,8 +16,8 @@
   --text-secondary: #9fc2c9;
   --text-muted: #5f818a;
   --border-glow: rgba(79, 216, 232, 0.35);
-  --font-display: "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Iskoola Pota", "Nirmala UI", "Noto Sans Sinhala";
-  --font-body: "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Iskoola Pota", "Nirmala UI", "Noto Sans Sinhala";
+  --font-display: "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Iskoola Pota", "Nirmala UI", "Noto Sans Sinhala", "Latha", "Noto Sans Tamil";
+  --font-body: "Segoe UI", "Helvetica Neue", Arial, sans-serif, "Iskoola Pota", "Nirmala UI", "Noto Sans Sinhala", "Latha", "Noto Sans Tamil";
 }
 
 * { box-sizing: border-box; }
