@@ -23,6 +23,7 @@
  * -----------------------------------------------------------------------
  */
 import { SI_DISCLAIMER, SI_SYSTEMS } from "./anatomyData.si.js";
+import { TA_DISCLAIMER, TA_SYSTEMS } from "./anatomyData.ta.js";
 
 export const DISCLAIMER =
   "For educational purposes only. This exhibit does not provide medical diagnosis or treatment advice.";
@@ -315,15 +316,18 @@ export const SYSTEM_ORDER = [
  * translation shows English text rather than an empty panel.
  *
  * @param {string} id   system id, e.g. "brain"
- * @param {"en"|"si"} [lang] language to render in (English by default)
+ * @param {"en"|"si"|"ta"} [lang] language to render in (English by default)
  * @returns {object|null} merged system, or null for an unknown id
  */
 export function getSystem(id, lang = "en") {
   const base = SYSTEMS[id];
   if (!base) return null;
-  if (lang !== "si") return base;
+  // Language overlays: Sinhala and Tamil. English (or any unknown code)
+  // returns the base untouched.
+  const overlays = lang === "si" ? SI_SYSTEMS : lang === "ta" ? TA_SYSTEMS : null;
+  if (!overlays) return base;
 
-  const overlay = SI_SYSTEMS[id];
+  const overlay = overlays[id];
   if (!overlay) return base;
 
   return {
@@ -346,10 +350,17 @@ export function getAllSystems(lang = "en") {
 
 /** The educational disclaimer in the given language. */
 export function getDisclaimer(lang = "en") {
-  return lang === "si" ? SI_DISCLAIMER : DISCLAIMER;
+  if (lang === "si") return SI_DISCLAIMER;
+  if (lang === "ta") return TA_DISCLAIMER;
+  return DISCLAIMER;
 }
 
 /** True when a Sinhala translation exists for this system. */
 export function hasSinhala(id) {
   return Boolean(SI_SYSTEMS[id]);
+}
+
+/** True when a Tamil translation exists for this system. */
+export function hasTamil(id) {
+  return Boolean(TA_SYSTEMS[id]);
 }

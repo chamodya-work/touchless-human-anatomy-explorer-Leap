@@ -2,8 +2,8 @@
  * uiStrings.js
  * -----------------------------------------------------------------------
  * Every piece of interface chrome the visitor can read (menus, panel
- * headings, HUD text, control buttons, model-status lines) in both
- * languages. Keeping it here means anatomyData.js stays pure anatomical
+ * headings, HUD text, control buttons, model-status lines) in every
+ * language (English, Sinhala, Tamil). Keeping it here means anatomyData.js stays pure anatomical
  * content, and adding a third language later is a data change only.
  *
  * Rules:
@@ -148,6 +148,72 @@ export const UI_STRINGS = {
     toggleBreathing: "හුස්ම ගැනීමේ ප්‍රකාරය",
     breathingHintOn:
       "හුස්ම ඇතුළට ගැනීමේදී: මහා ප්‍රාචීරය පහළට ඇදී පෙනහළු ප්‍රසාරණය වේ. හුස්ම එළියට දැමීමේදී: ඒවා ලිහිල් වී වායුව ඉවත් වේ.",
+  },
+  ta: {
+    appTitle: "தொடுகையற்ற மனித உடற்கூற்று ஆய்வகம்",
+    chooseLanguage: "மொழியைத் தேர்ந்தெடுக்கவும்",
+
+    welcomeKicker: "பல்கலைக்கழக மருத்துவக் கண்காட்சி",
+    welcomeTitleHtml: "தொடுகையற்ற மனித<br/>உடற்கூற்று ஆய்வகம்",
+    welcomeSubtitle: "உங்கள் கைகளைப் பயன்படுத்தி மனித உடலை ஆராயுங்கள்",
+    legendWave: "தொடங்க கையை அசையுங்கள்",
+    legendPoint: "தேர்ந்தெடுக்க சுட்டிக்காட்டுங்கள்",
+    legendPinch: "பிடிக்க விரல்களை இறுக்குங்கள்",
+    legendRotate: "சுழற்ற கையை அசையுங்கள்",
+    legendPalm: "திரும்ப உள்ளங்கையை விரியுங்கள்",
+    beginBtn: "தொடங்க உங்கள் கையை அசையுங்கள்",
+
+    menuTitle: "ஓர் உடல் தொகுதியைத் தேர்ந்தெடுக்கவும்",
+
+    backToMenu: "✋ பட்டியலுக்குத் திரும்பு",
+    pauseToast: "⏸ தொடர்பாடல் இடைநிறுத்தப்பட்டது",
+    idleText: "ஆராய உங்கள் கையை அசையுங்கள்",
+
+    systemOverview: "தொகுதி கண்ணோட்டம்",
+    selectedStructure: "தேர்ந்தெடுக்கப்பட்ட அமைப்பு",
+    keyStructures: "முக்கிய அமைப்புகள்",
+    didYouKnow: "உங்களுக்குத் தெரியுமா?",
+    realStructure: "உண்மையான அமைப்பு:",
+
+    bannerNoTracking: "கை கண்காணிப்பு கிடைக்கவில்லை. செய்முறை விளக்கத்துக்கு சுட்டியைப் பயன்படுத்துங்கள்.",
+    bannerLeapConnected: "Leap Motion LM-010 இணைக்கப்பட்டுள்ளது.",
+
+    modelLoading: "உண்மையான உடற்கூற்று மாதிரி ஏற்றப்படுகிறது...",
+    modelPlaceholder: "இடைக்கால மாதிரி -- README ஐப் பார்க்கவும்",
+    statusHeart: "உண்மையான மனித இதயமும் குருதிக் குழாய்களும் · HuBMAP மனித உசாத்துணை அட்லஸ் (CC BY 4.0)",
+    statusBrain: "உண்மையான மனித மூளை · 286 அமைப்புகள் · HuBMAP / Allen Institute (CC BY 4.0)",
+    statusLungs: "உண்மையான மனித சுவாசத் தொகுதி · HuBMAP மனித உசாத்துணை அட்லஸ் (CC BY 4.0) + BodyParts3D பிரிமென்றகடு (CC BY-SA)",
+    statusLungsNoDiaphragm: "உண்மையான மனித சுவாசத் தொகுதி · HuBMAP மனித உசாத்துணை அட்லஸ் (CC BY 4.0)",
+    statusSkeleton: "203 உண்மையான என்புகள் · BodyParts3D (CC BY-SA)",
+    statusMuscles: "467 உண்மையான தசைகளும் தசைநாண்களும் · BodyParts3D + Z-Anatomy (CC BY-SA)",
+    statusDigestive:
+      "உண்மையான ஈரல், சதையி, பித்தப்பை, குடல்கள் · HuBMAP (CC BY 4.0) + BodyParts3D இரைப்பை (CC BY-SA)",
+    statusDigestiveNoStomach:
+      "உண்மையான ஈரல், சதையி, பித்தப்பை, குடல்கள் · HuBMAP மனித உசாத்துணை அட்லஸ் (CC BY 4.0)",
+    statusEye: "உண்மையான மனிதக் கண் · Z-Anatomy / BodyParts3D (CC BY-SA)",
+    statusEyeNoOrbit: "உண்மையான மனிதக் கண்ணுருண்டை · Z-Anatomy / BodyParts3D (CC BY-SA) · கண் தசைகள் கிடைக்கவில்லை",
+
+    toggleBloodFlow: "குருதி ஓட்ட அசைவூட்டம்",
+    toggleEyeLight: "ஒளி எதிர்ச்செயல்",
+    toggleEyeFocus: "அண்மை / தொலைவுக் குவிப்பு",
+    toggleEyeGaze: "கண் அசைவு",
+    toggleEyeTears: "கண்ணீர் ஓட்டம்",
+    toggleEyeInside: "உள்ளே பார்",
+    eyeTipInside: "குறிப்பு: விழித்திரை, வில்லை, கண்ணாடியுடனீர் ஆகியவற்றை ஆராய “உள்ளே பார்” ஐ இயக்குங்கள்.",
+    eyeLightBright: "\u2600 பிரகாசமான ஒளி: கதிராளித் தசை இறுகி, கண்மணியைச் சுருக்கி விழித்திரையைப் பாதுகாக்கிறது.",
+    eyeLightDim: "\u263E மங்கிய ஒளி: முடிந்தவரை அதிக ஒளியை உள்ளே விட, கதிராளி கண்மணியை அகலமாகத் திறக்கிறது.",
+    eyeFocusNear: "அண்மையில் உள்ளதைப் பார்க்கும்போது: வில்லை தடித்தும் உருண்டும் மாறுகிறது; அதைப் பிடித்திருக்கும் நார்கள் தளர்கின்றன.",
+    eyeFocusFar: "தொலைவில் பார்க்கும்போது: தொலைவிலுள்ள பொருட்கள் தெளிவாகத் தெரிய வில்லை தட்டையாக இழுக்கப்படுகிறது.",
+    eyeGazeCenter: "நேராகப் பார்க்கும்போது: ஆறு கண் தசைகளும் சமநிலையில் உள்ளன.",
+    eyeGazeIn: "மூக்கை நோக்கிப் பார்க்கும்போது: உள் நேர்த்தசை கண்ணை உள்நோக்கி இழுக்கிறது.",
+    eyeGazeOut: "வெளிநோக்கிப் பார்க்கும்போது: வெளி நேர்த்தசை கண்ணைக் காது பக்கமாக இழுக்கிறது.",
+    eyeGazeUp: "மேலே பார்க்கும்போது: மேல் நேர்த்தசையும் கீழ் சாய்வுத்தசையும் கண்ணை மேலே தூக்குகின்றன.",
+    eyeGazeDown: "கீழே பார்க்கும்போது: கீழ் நேர்த்தசையும் மேல் சாய்வுத்தசையும் கண்ணைக் கீழே திருப்புகின்றன.",
+    eyeTearsHint: "கண்ணீர் கண்ணீர் சுரப்பியில் உற்பத்தியாகி, கண் முழுவதும் பரவி, கண்ணீர் நாளம் வழியாக மூக்கிற்குள் வடிகிறது.",
+    eyeInsideHint: "வெளி அடுக்குகள் இப்போது ஊடுருவிப் பார்க்கக்கூடியவை. வில்லை, கதிராளி, விழித்திரை அல்லது கண்ணாடியுடனீரைத் தேர்ந்தெடுங்கள்.",
+    toggleBreathing: "சுவாசப் பயன்முறை",
+    breathingHintOn:
+      "உள்ளிழுக்கும்போது: பிரிமென்றகடு கீழே இழுக்கப்பட்டு சுவாசப்பைகள் விரிகின்றன. வெளிவிடும்போது: அவை தளர்ந்து காற்று வெளியேறுகிறது.",
   },
 };
 
