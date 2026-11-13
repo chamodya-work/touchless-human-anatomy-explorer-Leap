@@ -221,13 +221,14 @@ html, body {
   color: var(--text-secondary);
 }
 .main-menu__grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 20px;
   max-width: 1300px;
 }
 @media (max-width: 1100px) {
-  .main-menu__grid { grid-template-columns: repeat(2, 1fr); }
+  .menu-btn { flex: 1 1 calc(50% - 10px); }
 }
 
 .menu-btn {
@@ -237,6 +238,7 @@ html, body {
   border: 1px solid var(--border-glow);
   border-radius: 18px;
   padding: 28px 20px;
+  flex: 0 0 calc(25% - 15px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -349,7 +351,7 @@ html, body {
   .main-menu__title { font-size: 1.15rem; }
   /* Keep four columns even on narrow-but-short screens: two huge columns
      make each button taller than four narrow ones do. */
-  .main-menu__grid { gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .main-menu__grid { gap: 14px; }
   .menu-btn { padding: 14px 12px; gap: 6px; }
   .menu-btn__icon { font-size: 1.6rem; }
   .menu-btn__label { font-size: 0.95rem; }
