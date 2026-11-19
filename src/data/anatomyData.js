@@ -135,7 +135,7 @@ export const SYSTEMS = {
     // diaphragm.glb is missing. See README/ATTRIBUTION.
     parts: [
       { id: "trachea", name: "Trachea", function: "The windpipe — carries air from the throat toward the lungs." },
-      { id: "bronchi", name: "Bronchi", function: "The branching airway tree, down to small tubes inside each lobe of the lungs." },
+      { id: "bronchi", name: "Lungs (Segments)", function: "The branching airway tree, down to small tubes inside each lobe of the lungs." },
       { id: "rightLung", name: "Right Lung", function: "Slightly larger lung, divided into three lobes." },
       { id: "leftLung", name: "Left Lung", function: "Slightly smaller lung, divided into two lobes to make room for the heart." },
       { id: "diaphragm", name: "Diaphragm", function: "The dome-shaped muscle beneath the lungs that drives breathing." },
